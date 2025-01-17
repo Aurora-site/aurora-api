@@ -146,7 +146,7 @@ significant transient or recurrent solar wind features are forecast.
     ]
 
 
-def test_parse_kp_3_forecast_g1():
+def test_parse_kp_3_forecast_g_values():
     data = """
 :Product: 3-Day Forecast
 :Issued: 2025 Jan 23 0030 UTC
@@ -163,12 +163,12 @@ NOAA Kp index breakdown Jan 23-Jan 25 2025
 
              Jan 23       Jan 24       Jan 25
 00-03UT       1.67         1.67         3.33
-03-06UT       1.33         1.33         5.33 (G1)
-06-09UT       1.33         1.33         5.00 (G1)
-09-12UT       1.33         1.33         4.00
+03-06UT       1.33 (G3)    1.33         5.33 (G1)
+06-09UT       1.33         1.33         5.00 (G5)
+09-12UT       1.33         1.33 (G2)    4.00
 12-15UT       1.33         4.00         4.00
 15-18UT       1.33         2.67         3.33
-18-21UT       1.67         4.00         3.33
+18-21UT       1.67 (G4)    4.00         3.33
 21-00UT       1.67         4.33         4.00
 
 Rationale: G1 (Minor) or greater geomagnetic storms are expected on 25
