@@ -1,6 +1,6 @@
 services:
   aurora-api:
-    image: ghcr.io/akorzunin/aurora-api:latest
+    image: ghcr.io/aurora-site/aurora-api:latest
     container_name: test-aurora-api
     ports:
       - ${PORT:-8000}:8000
