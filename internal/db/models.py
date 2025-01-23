@@ -11,7 +11,7 @@ from tortoise.validators import MaxValueValidator, MinValueValidator
 
 
 class Customers(models.Model):
-    id = fields.IntField(pk=True)
+    id = fields.IntField(primary_key=True)
     current_geo_lat = fields.FloatField(
         null=True,
         validators=[
@@ -64,7 +64,7 @@ class Customers(models.Model):
 
 
 class Subscriptions(models.Model):
-    id = fields.UUIDField(pk=True)
+    id = fields.UUIDField(primary_key=True)
     cust = fields.ForeignKeyField(
         "models.Customers",
         related_name="subscriptions",
@@ -92,7 +92,7 @@ class Subscriptions(models.Model):
 
 
 class Cities(models.Model):
-    id = fields.IntField(pk=True)
+    id = fields.IntField(primary_key=True)
     name = fields.CharField(max_length=255)
     lat = fields.FloatField(
         validators=[
