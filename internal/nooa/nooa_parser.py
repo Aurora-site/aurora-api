@@ -64,7 +64,7 @@ def parse_kp_3_forecast(data: str) -> list[NooaAuroraKp3Col]:
             continue
         if "UT" not in line:
             continue
-        line = line.strip()
+        line = line.replace("(G1)", "").strip()
         if not line:
             continue
         raw_date, raw_values = line.split(maxsplit=1)
