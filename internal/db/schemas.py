@@ -45,9 +45,11 @@ else:
 class CustIn(CustomerIn_Pydantic):
     current_geo_lat: float = Field(le=90, ge=-90, default=None)
     current_geo_long: float = Field(le=180, ge=-180, default=None)
-    selected_geo_lat: float = Field(le=90, ge=-90)
-    selected_geo_long: float = Field(le=180, ge=-180)
+    selected_geo_lat: float = Field(le=90, ge=-90, default=None)
+    selected_geo_long: float = Field(le=180, ge=-180, default=None)
     locale: str = Field(max_length=2, default="ru")
+    token: str = Field(max_length=255)
+    city_id: int = Field(gt=0)
 
 
 if TYPE_CHECKING:

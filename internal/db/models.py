@@ -27,18 +27,25 @@ class Customers(models.Model):
         ],
     )
     selected_geo_lat = fields.FloatField(
+        null=True,
         validators=[
             MinValueValidator(-90),
             MaxValueValidator(90),
         ],
     )
     selected_geo_long = fields.FloatField(
+        null=True,
         validators=[
             MinValueValidator(-180),
             MaxValueValidator(180),
         ],
     )
     locale = fields.CharField(max_length=2, default="ru")
+    city = fields.ForeignKeyField(
+        "models.Cities",
+        related_name="cities",
+    )  # city_id in db WARN dont use city_id as filed name for fk
+    token = fields.CharField(max_length=255)
 
     created_at = fields.DatetimeField(auto_now_add=True)
     updated_at = fields.DatetimeField(auto_now=True)
@@ -106,6 +113,9 @@ class Cities(models.Model):
             MaxValueValidator(180),
         ],
     )
+
+    class Meta:
+        table = "cities"
 
 
 # Название (например tour_title)

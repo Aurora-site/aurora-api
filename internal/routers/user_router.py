@@ -21,18 +21,18 @@ NewUserBody = Annotated[
         openapi_examples={
             "Ex User 1": {
                 "value": {
-                    "current_geo_lat": 60.1,
-                    "current_geo_long": 60.2,
-                    "selected_geo_lat": 50.1,
-                    "selected_geo_long": 50.2,
+                    "city_id": 1,
                     "locale": "ru",
+                    "token": "test",
                 }
             },
             "Ex User 2": {
                 "value": {
-                    "selected_geo_lat": 40.3,
-                    "selected_geo_long": 40.4,
+                    "current_geo_lat": 40.3,
+                    "current_geo_long": 40.4,
+                    "city_id": 1,
                     "locale": "ch",
+                    "token": "test",
                 },
             },
         }
