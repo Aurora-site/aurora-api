@@ -23,13 +23,13 @@
       changed_when: out.rc != 0
 
     # https://github.com/tortoise/aerich/issues/384
-    # - name: Run migrations
-    #   ansible.builtin.command:
-    #     cmd: docker compose run aurora-api aerich upgrade
-    #     chdir: "{{ project_dir }}"
-    #   timeout: 60
-    #   register: out
-    #   changed_when: out.rc != 0
+    - name: Run migrations
+      ansible.builtin.command:
+        cmd: timeout -s INT -k 10 --preserve-status 5 docker compose run --rm aurora-api aerich upgrade
+        chdir: "{{ project_dir }}"
+      timeout: 60
+      register: out
+      changed_when: out.rc != 0
 
     - name: Deploy new image
       ansible.builtin.command:

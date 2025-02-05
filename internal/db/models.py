@@ -46,6 +46,8 @@ class Customers(models.Model):
         related_name="cities",
     )  # city_id in db WARN dont use city_id as filed name for fk
     token = fields.CharField(max_length=255)
+    hobo = fields.BooleanField(default=False)
+    hobo_at = fields.DatetimeField(null=True)
 
     created_at = fields.DatetimeField(auto_now_add=True)
     updated_at = fields.DatetimeField(auto_now=True)
