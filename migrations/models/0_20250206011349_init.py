@@ -3,15 +3,25 @@ from tortoise import BaseDBAsyncClient
 
 async def upgrade(db: BaseDBAsyncClient) -> str:
     return """
-        CREATE TABLE IF NOT EXISTS "customers" (
+        CREATE TABLE IF NOT EXISTS "cities" (
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    "name" VARCHAR(255) NOT NULL,
+    "lat" REAL NOT NULL,
+    "long" REAL NOT NULL
+);
+CREATE TABLE IF NOT EXISTS "customers" (
     "id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
     "current_geo_lat" REAL,
     "current_geo_long" REAL,
-    "selected_geo_lat" REAL NOT NULL,
-    "selected_geo_long" REAL NOT NULL,
+    "selected_geo_lat" REAL,
+    "selected_geo_long" REAL,
     "locale" VARCHAR(2) NOT NULL  DEFAULT 'ru',
+    "token" VARCHAR(255) NOT NULL,
+    "hobo" INT NOT NULL  DEFAULT 0,
+    "hobo_at" TIMESTAMP,
     "created_at" TIMESTAMP NOT NULL  DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP NOT NULL  DEFAULT CURRENT_TIMESTAMP
+    "updated_at" TIMESTAMP NOT NULL  DEFAULT CURRENT_TIMESTAMP,
+    "city_id" INT NOT NULL REFERENCES "cities" ("id") ON DELETE CASCADE
 );
 CREATE TABLE IF NOT EXISTS "subscriptions" (
     "id" CHAR(36) NOT NULL  PRIMARY KEY,
@@ -26,6 +36,18 @@ CREATE TABLE IF NOT EXISTS "subscriptions" (
     "created_at" TIMESTAMP NOT NULL  DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP NOT NULL  DEFAULT CURRENT_TIMESTAMP,
     "cust_id" INT NOT NULL REFERENCES "customers" ("id") ON DELETE CASCADE
+);
+CREATE TABLE IF NOT EXISTS "tours" (
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    "name" VARCHAR(2000) NOT NULL,
+    "text_mini" VARCHAR(2000) NOT NULL,
+    "text" TEXT NOT NULL,
+    "text_head" VARCHAR(2000) NOT NULL,
+    "price" REAL NOT NULL,
+    "url" VARCHAR(2000) NOT NULL,
+    "image" VARCHAR(2000) NOT NULL,
+    "created_at" TIMESTAMP NOT NULL  DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL  DEFAULT CURRENT_TIMESTAMP
 );
 CREATE TABLE IF NOT EXISTS "aerich" (
     "id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
