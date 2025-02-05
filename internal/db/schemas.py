@@ -1,4 +1,3 @@
-# type: ignore
 from typing import TYPE_CHECKING
 
 from pydantic import BaseModel, EmailStr, Field
@@ -16,7 +15,7 @@ class Message(BaseModel):
 
 if TYPE_CHECKING:
 
-    class Customer_Pydantic(Customers, BaseModel):
+    class Customer_Pydantic(BaseModel):
         pass
 
 else:
@@ -32,7 +31,7 @@ class Cust(Customer_Pydantic):
 
 if TYPE_CHECKING:
 
-    class CustomerIn_Pydantic(Customers, BaseModel):
+    class CustomerIn_Pydantic(BaseModel):
         pass
 
 else:
@@ -44,8 +43,8 @@ else:
 
 
 class CustIn(CustomerIn_Pydantic):
-    current_geo_lat: float = Field(le=90, ge=-90, default=None)
-    current_geo_long: float = Field(le=180, ge=-180, default=None)
+    current_geo_lat: float | None = Field(le=90, ge=-90, default=None)
+    current_geo_long: float | None = Field(le=180, ge=-180, default=None)
     locale: str = Field(max_length=2, default="ru")
     token: str = Field(max_length=255)
     city_id: int = Field(gt=0)
@@ -53,7 +52,7 @@ class CustIn(CustomerIn_Pydantic):
 
 if TYPE_CHECKING:
 
-    class Subscription_Pydantic(Subscriptions, BaseModel):
+    class Subscription_Pydantic(BaseModel):
         pass
 
 else:
@@ -69,7 +68,7 @@ class Sub(Subscription_Pydantic):
 
 if TYPE_CHECKING:
 
-    class SubscriptionIn_Pydantic(Subscriptions, BaseModel):
+    class SubscriptionIn_Pydantic(BaseModel):
         pass
 
 else:
@@ -87,7 +86,7 @@ class SubIn(SubscriptionIn_Pydantic):
 
 if TYPE_CHECKING:
 
-    class City_Pydantic(Cities, BaseModel):
+    class City_Pydantic(BaseModel):
         pass
 
 else:
@@ -103,7 +102,7 @@ class City(City_Pydantic):
 
 if TYPE_CHECKING:
 
-    class CityIn_Pydantic(Cities, BaseModel):
+    class CityIn_Pydantic(BaseModel):
         pass
 
 else:
