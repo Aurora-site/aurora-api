@@ -177,7 +177,12 @@ def nearst_aurora_probability(
     nooa_lon, nooa_lat, pb = next(
         v
         for v in prob_map.coordinates
-        if v[:2] == [rounded_lon + 180, rounded_lat]
+        # fmt: off
+        if v[:2] == [
+            rounded_lon if rounded_lon > 0 else rounded_lon + 360,
+            rounded_lat,
+        ]
+        # fmt: on
     )
     return AuroraNooaProbabilityResponse(
         probability=pb,
