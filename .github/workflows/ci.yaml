@@ -20,10 +20,41 @@ jobs:
           python-version: "3.11"
       - uses: pre-commit/action@v3.0.1
 
+  test:
+    name: 🧪 Run Tests
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4.1.7
+      - uses: actions/setup-python@v3
+        with:
+          python-version: "3.11"
+      - name: Install poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: 1.8.3
+          virtualenvs-path: .venv
+          virtualenvs-in-project: true
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v4
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+      - name: Install dependencies
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        run: poetry install --no-interaction --no-root
+      - name: Run tests
+        run: |
+          source .venv/bin/activate
+          coverage run -m pytest . -vv --color=yes
+          coverage report
+
   build:
     name: 🐳 Build Docker image
     runs-on: ubuntu-22.04
-    needs: check
+    needs:
+      - check
+      - test
     permissions:
       contents: read
       packages: write
