@@ -36,6 +36,23 @@ async def set_cities(cities: list[CityIn]):
     return cs
 
 
+@router.post("/new-city", response_model=City)
+async def new_city(city: CityIn):
+    """Добавление города"""
+    c = await Cities.create(**city.model_dump())
+    return c
+
+
+@router.delete("/city/{city_id}", response_model=Message)
+async def drop_city(city_id: int):
+    """Удаление города"""
+    c = await Cities.get_or_none(id=city_id)
+    if c is None:
+        raise HTTPException(status_code=404, detail="City not found")
+    await c.delete()
+    return Message(detail="ok")
+
+
 @router.delete("/drop-cache")
 async def drop_cache():
     """Очистка кэша запросов в NOOA"""

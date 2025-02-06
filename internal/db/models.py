@@ -115,6 +115,7 @@ class Cities(models.Model):
             MaxValueValidator(180),
         ],
     )
+    time = fields.CharField(max_length=255, null=True)
 
     class Meta:
         table = "cities"
@@ -135,6 +136,7 @@ class Tours(models.Model):
     text_mini = fields.CharField(max_length=2000)
     text = fields.TextField()
     text_head = fields.CharField(max_length=2000)
+    text_erid = fields.CharField(max_length=255, null=True)
     price = fields.FloatField()
     url = fields.CharField(max_length=2000)
     image = fields.CharField(max_length=2000)
