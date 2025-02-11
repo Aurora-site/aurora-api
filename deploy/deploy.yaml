@@ -7,7 +7,7 @@
   tasks:
     - name: Copy files to service directory
       ansible.builtin.copy:
-        src: "{{ item }}"
+        src: "{{ ENV_NAME }}/{{ item }}"
         dest: "{{ project_dir }}/{{ item }}"
         mode: "0755"
         backup: false
@@ -19,14 +19,18 @@
       ansible.builtin.command:
         cmd: docker compose pull
         chdir: "{{ project_dir }}"
+      environment:
+        IMAGE_TAG: "{{ IMAGE_TAG }}"
       register: out
       changed_when: out.rc != 0
 
     # https://github.com/tortoise/aerich/issues/384
     - name: Run migrations
       ansible.builtin.command:
-        cmd: docker compose run --rm aurora-api aerich upgrade
+        cmd: docker compose run --rm aurora-api timeout 25 aerich upgrade
         chdir: "{{ project_dir }}"
+      environment:
+        IMAGE_TAG: "{{ IMAGE_TAG }}"
       timeout: 30
       register: out
       changed_when: out.rc != 0
@@ -39,5 +43,6 @@
       environment:
         PORT: "{{ PORT }}"
         IGNORE_CORS: "{{ IGNORE_CORS }}"
+        IMAGE_TAG: "{{ IMAGE_TAG }}"
       register: out
       changed_when: out.rc != 0

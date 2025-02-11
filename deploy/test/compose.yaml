@@ -1,6 +1,6 @@
 services:
   aurora-api:
-    image: ghcr.io/aurora-site/aurora-api:latest
+    image: ghcr.io/aurora-site/aurora-api:${IMAGE_TAG:-latest}
     container_name: test-aurora-api
     ports:
       - ${PORT:-8000}:8000

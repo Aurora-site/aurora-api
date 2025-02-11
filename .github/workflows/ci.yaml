@@ -2,19 +2,17 @@ name: ci-workflow
 
 on:
   push:
-    branches:
-      - main
-      - test
   pull_request:
     branches:
       - main
+      - test
 
 jobs:
   check:
     name: 🛠️ Run Pre-commit Hooks
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4.1.7
+      - uses: actions/checkout@v4
       - uses: actions/setup-python@v3
         with:
           python-version: "3.11"
@@ -24,7 +22,7 @@ jobs:
     name: 🧪 Run Tests
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4.1.7
+      - uses: actions/checkout@v4
       - uses: actions/setup-python@v3
         with:
           python-version: "3.11"
@@ -55,11 +53,12 @@ jobs:
     needs:
       - check
       - test
+    if: github.event_name != 'pull_request'
     permissions:
       contents: read
       packages: write
     steps:
-      - uses: actions/checkout@v4.1.7
+      - uses: actions/checkout@v4
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3.3.0
@@ -69,11 +68,12 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Extract metadata (tags, labels) for Docker
         id: meta
-        uses: docker/metadata-action@v5.5.1
+        uses: docker/metadata-action@v5
         with:
           images: ghcr.io/aurora-site/aurora-api
           tags: |
-            - type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=sha
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3.6.1
         with:
@@ -101,12 +101,15 @@ jobs:
       run:
         working-directory: deploy/test
     steps:
-      - uses: actions/checkout@v4.1.7
+      - uses: actions/checkout@v4
+      - name: Get short SHA
+        id: vars
+        run: echo "sha_short=sha-$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
       - name: Run playbook
         uses: dawidd6/action-ansible-playbook@v2
         with:
           playbook: deploy.yaml
-          directory: deploy/test
+          directory: deploy
           configuration: |
             [defaults]
             callbacks_enabled = ansible.posix.profile_tasks, ansible.posix.timer
@@ -123,4 +126,6 @@ jobs:
             --extra-vars "
             PORT=${{ vars.PORT }}
             IGNORE_CORS=${{ vars.IGNORE_CORS }}
+            IMAGE_TAG=${{ steps.vars.outputs.sha_short }}
+            ENV_NAME=test
             "
