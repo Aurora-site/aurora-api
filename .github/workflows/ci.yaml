@@ -44,6 +44,7 @@ jobs:
       - name: Run tests
         run: |
           source .venv/bin/activate
+          set -o allexport; source .env.example; set +o allexport
           coverage run -m pytest . -vv --color=yes
           coverage report
 
