@@ -1,3 +1,4 @@
+import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import AsyncGenerator
@@ -14,6 +15,7 @@ from internal.logger import setup_logging, setup_uvicorn_logging
 from internal.routers import admin_router, api_router, user_router
 from internal.settings import IGNORE_CORS, LOG_JSON, LOG_LEVEL, MEDIA_FOLDER
 
+logging.getLogger("hishel.controller").setLevel(logging.DEBUG)
 setup_logging(
     json_logs=LOG_JSON,
     log_level=LOG_LEVEL,
@@ -29,11 +31,6 @@ access_logger = structlog.stdlib.get_logger("api.access")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
-    # if getattr(app.state, "testing", None):
-    #     async with lifespan_test(app) as _:
-    #         yield
-    # else:
-    # app startup
     async with register_orm(app):
         yield
 
