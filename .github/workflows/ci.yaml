@@ -126,6 +126,7 @@ jobs:
             --extra-vars "
             PORT=${{ vars.PORT }}
             IGNORE_CORS=${{ vars.IGNORE_CORS }}
+            OW_API_KEY=${{ vars.OW_API_KEY }}
             IMAGE_TAG=${{ steps.vars.outputs.sha_short }}
             ENV_NAME=test
             "

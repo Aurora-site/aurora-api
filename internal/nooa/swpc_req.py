@@ -5,8 +5,9 @@ import hishel
 from fastapi import Depends
 from pydantic import BaseModel, Field
 
+controller = hishel.Controller(force_cache=True)
 storage = hishel.InMemoryStorage(capacity=64, ttl=3600)
-client = hishel.CacheClient(storage=storage)
+client = hishel.CacheClient(storage=storage, controller=controller)
 
 
 class SwpcDstReq(BaseModel):

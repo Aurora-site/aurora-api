@@ -12,11 +12,12 @@ from internal.nooa.nooa_parser import (
     parse_kp_27_outlook,
 )
 
+controller = hishel.Controller(force_cache=True)
 storage = hishel.InMemoryStorage(capacity=64, ttl=3600)
-client = hishel.CacheClient(storage=storage)
+client = hishel.CacheClient(storage=storage, controller=controller)
 
 long_storage = hishel.InMemoryStorage(capacity=64, ttl=24 * 3600)
-long_client = hishel.CacheClient(storage=long_storage)
+long_client = hishel.CacheClient(storage=long_storage, controller=controller)
 
 
 class NooaAuroraRes(BaseModel):
@@ -51,8 +52,6 @@ def use_nooa_aurora_client() -> bytes:
     )
     if res.status_code != 200:
         raise Exception("Failed to get data from nooa (aurora client)")
-    # data = res.json()
-    # return NooaAuroraReq.model_validate(data)
     return res.content
 
 

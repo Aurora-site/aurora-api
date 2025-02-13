@@ -41,8 +41,9 @@
         cmd: docker compose up -d --force-recreate
         chdir: "{{ project_dir }}"
       environment:
+        IMAGE_TAG: "{{ IMAGE_TAG }}"
         PORT: "{{ PORT }}"
         IGNORE_CORS: "{{ IGNORE_CORS }}"
-        IMAGE_TAG: "{{ IMAGE_TAG }}"
+        OW_API_KEY: "{{ OW_API_KEY }}"
       register: out
       changed_when: out.rc != 0

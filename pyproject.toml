@@ -17,6 +17,7 @@ tortoise-orm = { extras = ["aiosqlite"], version = "^0.23.0" }
 aerich = { extras = ["toml"], version = "^0.8.1" }
 pydantic = { extras = ["email"], version = "^2.10.5" }
 python-multipart = "^0.0.20"
+python-dotenv = "^1.0.1"
 
 
 [tool.poetry.group.test.dependencies]
