@@ -13,7 +13,13 @@ from fastapi.staticfiles import StaticFiles
 from internal.db.config import register_orm
 from internal.logger import setup_logging, setup_uvicorn_logging
 from internal.routers import admin_router, api_router, user_router
-from internal.settings import IGNORE_CORS, LOG_JSON, LOG_LEVEL, MEDIA_FOLDER
+from internal.settings import (
+    ALLOWED_ORIGINS,
+    IGNORE_CORS,
+    LOG_JSON,
+    LOG_LEVEL,
+    MEDIA_FOLDER,
+)
 
 logging.getLogger("hishel.controller").setLevel(logging.DEBUG)
 setup_logging(
@@ -69,13 +75,21 @@ async def integrity_exception_handler(request, exc):
 
 
 if IGNORE_CORS:
-    app.add_middleware(
-        CORSMiddleware,
+    app.add_middleware(  # type: ignore
+        CORSMiddleware,  # type: ignore
         allow_origins=["*"],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
         expose_headers=["*"],
+    )
+else:
+    app.add_middleware(  # type: ignore
+        CORSMiddleware,  # type: ignore
+        allow_origins=ALLOWED_ORIGINS.split(","),
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
     )
 
 if __name__ == "__main__":

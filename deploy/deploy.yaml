@@ -45,5 +45,6 @@
         PORT: "{{ PORT }}"
         IGNORE_CORS: "{{ IGNORE_CORS }}"
         OW_API_KEY: "{{ OW_API_KEY }}"
+        ALLOWED_ORIGINS: "{{ ALLOWED_ORIGINS }}"
       register: out
       changed_when: out.rc != 0

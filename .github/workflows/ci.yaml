@@ -127,6 +127,7 @@ jobs:
             PORT=${{ vars.PORT }}
             IGNORE_CORS=${{ vars.IGNORE_CORS }}
             OW_API_KEY=${{ vars.OW_API_KEY }}
+            ALLOWED_ORIGINS=${{ vars.ALLOWED_ORIGINS }}
             IMAGE_TAG=${{ steps.vars.outputs.sha_short }}
             ENV_NAME=test
             "
