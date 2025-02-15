@@ -23,6 +23,7 @@ python-dotenv = "^1.0.1"
 [tool.poetry.group.test.dependencies]
 pytest = "^8.3.4"
 coverage = "^7.6.10"
+pytest-asyncio = "^0.25.2"
 
 [build-system]
 requires = ["poetry-core"]
@@ -60,3 +61,7 @@ explicit_package_bases = true
 tortoise_orm = "internal.db.config.TORTOISE_ORM"
 location = "./migrations"
 src_folder = "./."
+
+[tool.pytest.ini_options]
+asyncio_mode="auto"
+asyncio_default_fixture_loop_scope="function"
