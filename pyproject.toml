@@ -49,6 +49,9 @@ ignore = [
     "C408", # Unnecessary `dict` call
 ]
 
+[tool.ruff.lint.extend-per-file-ignores]
+"**/test_*.py" = ["F811", "F401"]
+
 [tool.isort]
 profile = "black"
 
