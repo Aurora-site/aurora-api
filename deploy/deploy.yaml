@@ -27,7 +27,7 @@
     # https://github.com/tortoise/aerich/issues/384
     - name: Run migrations
       ansible.builtin.command:
-        cmd: docker compose run --rm aurora-api timeout 25 aerich upgrade
+        cmd: docker compose run --rm aurora-api python migrate.py upgrade
         chdir: "{{ project_dir }}"
       environment:
         IMAGE_TAG: "{{ IMAGE_TAG }}"
