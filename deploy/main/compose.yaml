@@ -1,0 +1,17 @@
+services:
+  aurora-api:
+    image: ghcr.io/aurora-site/aurora-api:${IMAGE_TAG:-latest}
+    container_name: aurora-api
+    ports:
+      - 127.0.0.1:${PORT:-8000}:8000
+    environment:
+      - IGNORE_CORS=${IGNORE_CORS:-}
+      - OW_API_KEY=${OW_API_KEY:-}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-}
+    restart: unless-stopped
+    command: uvicorn main:app --host 0.0.0.0 --port 8000
+    labels:
+      org.opencontainers.group: "logging"
+    volumes:
+      - ${DATA_PATH:-./data}:/app/data
+      - ${MEDIA_PATH:-./media}:/app/media

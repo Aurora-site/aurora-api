@@ -7,5 +7,9 @@
 **/compose*
 **/Dockerfile*
 **/*cache*
+**/.env*
+**/media
+**/data
+**/deploy
 LICENSE
 README.md

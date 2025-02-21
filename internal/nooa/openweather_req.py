@@ -8,7 +8,7 @@ from internal.settings import OW_API_KEY
 
 # cap is 64 cuz its max amount of tiles we need to full world map on client
 storage = hishel.InMemoryStorage(capacity=64, ttl=30 * 60)
-controller = hishel.Controller(force_cache=True)
+controller = hishel.Controller(force_cache=True, allow_stale=True)
 client = hishel.CacheClient(storage=storage, controller=controller)
 
 

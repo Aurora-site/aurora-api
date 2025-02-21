@@ -95,7 +95,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: build
     environment:
-      name: test
+      name: ${{ github.ref_name }}
       url: https://test-aurora-api.akorz.duckdns.org
     defaults:
       run:
@@ -129,5 +129,5 @@ jobs:
             OW_API_KEY=${{ vars.OW_API_KEY }}
             ALLOWED_ORIGINS=${{ vars.ALLOWED_ORIGINS }}
             IMAGE_TAG=${{ steps.vars.outputs.sha_short }}
-            ENV_NAME=test
+            ENV_NAME=${{ github.ref_name }}
             "

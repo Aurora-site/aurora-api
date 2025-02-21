@@ -1,8 +1,8 @@
-- name: Deploy test aurora-api
+- name: Deploy {{ ENV_NAME }} aurora-api
   hosts: all
   become: false
   vars:
-    project_dir: ~/deploy/test-aurora-api
+    project_dir: "~/deploy/{{ ENV_NAME }}-aurora-api"
 
   tasks:
     - name: Copy files to service directory
