@@ -4,7 +4,7 @@ import httpx
 from tortoise import Tortoise
 
 from internal.db.config import ORM_MODELS
-from internal.settings import ADMIN_PASS, ADMIN_USER
+from internal.settings import ADMIN_PASS, ADMIN_TEST_PASS, ADMIN_USER
 
 MEMORY_SQLITE = "sqlite://:memory:"
 
@@ -31,4 +31,4 @@ def init_memory_sqlite(models: list[str] | None = None):
     return wrapper
 
 
-admin_auth = httpx.BasicAuth(username=ADMIN_USER, password=ADMIN_PASS)
+admin_auth = httpx.BasicAuth(username=ADMIN_USER, password=ADMIN_TEST_PASS)

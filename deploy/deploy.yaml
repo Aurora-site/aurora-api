@@ -46,5 +46,8 @@
         IGNORE_CORS: "{{ IGNORE_CORS }}"
         OW_API_KEY: "{{ OW_API_KEY }}"
         ALLOWED_ORIGINS: "{{ ALLOWED_ORIGINS }}"
+        ADMIN_USER: "{{ ADMIN_USER }}"
+        ADMIN_PASS: "{{ ADMIN_PASS }}"
+        ADMIN_SALT: "{{ ADMIN_SALT }}"
       register: out
       changed_when: out.rc != 0

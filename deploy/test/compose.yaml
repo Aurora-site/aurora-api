@@ -8,6 +8,9 @@ services:
       - IGNORE_CORS=${IGNORE_CORS:-}
       - OW_API_KEY=${OW_API_KEY:-}
       - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-}
+      - ADMIN_USER=${ADMIN_USER:-}
+      - ADMIN_PASS=${ADMIN_PASS:-}
+      - ADMIN_SALT=${ADMIN_SALT:-}
     restart: unless-stopped
     command: uvicorn main:app --host 0.0.0.0 --port 8000
     labels:

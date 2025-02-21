@@ -130,4 +130,7 @@ jobs:
             ALLOWED_ORIGINS=${{ vars.ALLOWED_ORIGINS }}
             IMAGE_TAG=${{ steps.vars.outputs.sha_short }}
             ENV_NAME=${{ github.ref_name }}
+            ADMIN_USER=${{ vars.ADMIN_USER }}
+            ADMIN_PASS=${{ vars.ADMIN_PASS }}
+            ADMIN_SALT=${{ vars.ADMIN_SALT }}
             "
