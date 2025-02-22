@@ -5,6 +5,12 @@
     project_dir: "~/deploy/{{ ENV_NAME }}-aurora-api"
 
   tasks:
+    - name: Create project directory
+      ansible.builtin.file:
+        path: "{{ project_dir }}"
+        state: directory
+        mode: "0755"
+
     - name: Copy files to service directory
       ansible.builtin.copy:
         src: "{{ ENV_NAME }}/{{ item }}"
