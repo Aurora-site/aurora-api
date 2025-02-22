@@ -96,7 +96,7 @@ jobs:
     needs: build
     environment:
       name: ${{ github.ref_name }}
-      url: https://test-aurora-api.akorz.duckdns.org
+      url: ${{ vars.DEPLOY_URL }}
     defaults:
       run:
         working-directory: deploy/test
