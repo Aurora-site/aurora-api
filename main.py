@@ -12,7 +12,7 @@ from fastapi.staticfiles import StaticFiles
 
 from internal.db.config import register_orm
 from internal.logger import setup_logging, setup_uvicorn_logging
-from internal.routers import admin_router, api_router
+from internal.routers import admin_router, api_router, proxy_router
 from internal.settings import (
     ALLOWED_ORIGINS,
     IGNORE_CORS,
@@ -62,6 +62,7 @@ app.mount("/media", StaticFiles(directory=MEDIA_FOLDER))
 app.include_router(api_router.router)
 # app.include_router(user_router.router)
 app.include_router(admin_router.router)
+app.include_router(proxy_router.router)
 
 
 @app.exception_handler(tortoise.exceptions.ValidationError)
