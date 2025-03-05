@@ -5,7 +5,15 @@ from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile
 
 from internal.auth import check_credentials
 from internal.db.models import Cities, Customers, Tours
-from internal.db.schemas import City, CityIn, Cust, Message, Tour, TourIn
+from internal.db.schemas import (
+    City,
+    CityIn,
+    CityUpdate,
+    Cust,
+    Message,
+    Tour,
+    TourIn,
+)
 from internal.nooa import nooa_req, swpc_req
 from internal.settings import MEDIA_FOLDER
 
@@ -51,6 +59,19 @@ async def drop_city(city_id: int):
         raise HTTPException(status_code=404, detail="City not found")
     await c.delete()
     return Message(detail="ok")
+
+
+@router.put("/city/{city_id}", response_model=City)
+async def update_city(city_id: int, city: CityUpdate):
+    """Обновление города"""
+    c = await Cities.get_or_none(id=city_id)
+    if c is None:
+        raise HTTPException(status_code=404, detail="City not found")
+    upd_c = await c.update_from_dict(
+        {k: v for k, v in city.model_dump().items() if v is not None}
+    )
+    await upd_c.save()
+    return upd_c
 
 
 @router.delete("/drop-cache")

@@ -121,6 +121,15 @@ class CityIn(CityIn_Pydantic):
     long: GeoFloat = Field(le=180, ge=-180)
 
 
+class CityUpdate(BaseModel):
+    name: str | None = Field(max_length=255, default=None)
+    name_ru: str | None = Field(max_length=255, default=None)
+    name_en: str | None = Field(max_length=255, default=None)
+    name_cn: str | None = Field(max_length=255, default=None)
+    lat: GeoFloat | None = Field(le=90, ge=-90, default=None)
+    long: GeoFloat | None = Field(le=180, ge=-180, default=None)
+
+
 if TYPE_CHECKING:
 
     class Tour_Pydantic(BaseModel):
