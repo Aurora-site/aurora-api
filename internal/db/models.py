@@ -41,7 +41,7 @@ class Customers(models.Model):
         ],
     )
     locale = fields.CharField(max_length=2, default="ru")
-    city = fields.ForeignKeyField(
+    city = fields.ForeignKeyField(  # type: ignore
         "models.Cities",
         related_name="cities",
     )  # city_id in db WARN dont use city_id as filed name for fk
@@ -74,7 +74,7 @@ class Customers(models.Model):
 
 class Subscriptions(models.Model):
     id = fields.UUIDField(primary_key=True)
-    cust = fields.ForeignKeyField(
+    cust = fields.ForeignKeyField(  # type: ignore
         "models.Customers",
         related_name="subscriptions",
     )  # cust_id in db
@@ -103,6 +103,9 @@ class Subscriptions(models.Model):
 class Cities(models.Model):
     id = fields.IntField(primary_key=True)
     name = fields.CharField(max_length=255)
+    name_ru = fields.CharField(max_length=255, null=True)
+    name_en = fields.CharField(max_length=255, null=True)
+    name_cn = fields.CharField(max_length=255, null=True)
     lat = fields.FloatField(
         validators=[
             MinValueValidator(-90),

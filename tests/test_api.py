@@ -38,3 +38,29 @@ async def test_add_remove_city(client: TestClient, city: CityIn):
     res = client.get("/api/v1/all-cities")
     assert res.status_code == 200
     assert res.json() == []
+
+
+@pytest.mark.asyncio
+@init_memory_sqlite()
+async def test_update_city(client: TestClient, city: CityIn):
+    ct = city.model_dump()
+    ct |= {"id": 1}
+    res = client.post(
+        "/api/v1/new-city",
+        json=city.model_dump(),
+        auth=admin_auth,
+    )
+    assert res.status_code == 200
+    assert res.json() == ct
+    upd = {
+        "name_ru": "test",
+        "name_en": "test",
+        "name_cn": "test",
+    }
+    res = client.put(
+        "/api/v1/city/1",
+        json=upd,
+        auth=admin_auth,
+    )
+    assert res.status_code == 200
+    assert res.json() == ct | upd
