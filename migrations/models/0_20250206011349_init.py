@@ -25,8 +25,8 @@ CREATE TABLE IF NOT EXISTS "customers" (
 );
 CREATE TABLE IF NOT EXISTS "subscriptions" (
     "id" CHAR(36) NOT NULL  PRIMARY KEY,
-    "email" VARCHAR(255) NOT NULL UNIQUE,
-    "cust_name" VARCHAR(255) NOT NULL,
+    "email" VARCHAR(255),
+    "cust_name" VARCHAR(255),
     "cust_surname" VARCHAR(255),
     "cust_patronymic" VARCHAR(255),
     "alert_probability" INT NOT NULL,

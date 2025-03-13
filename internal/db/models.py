@@ -78,8 +78,8 @@ class Subscriptions(models.Model):
         "models.Customers",
         related_name="subscriptions",
     )  # cust_id in db
-    email = fields.CharField(max_length=255, unique=True)
-    cust_name = fields.CharField(max_length=255)
+    email = fields.CharField(max_length=255, null=True)
+    cust_name = fields.CharField(max_length=255, null=True)
     cust_surname = fields.CharField(max_length=255, null=True)
     cust_patronymic = fields.CharField(max_length=255, null=True)
 
