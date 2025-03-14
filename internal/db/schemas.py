@@ -52,6 +52,11 @@ class CustIn(CustomerIn_Pydantic):
     city_id: int = Field(gt=0)
 
 
+class CustUpdate(BaseModel):
+    city_id: int | None = Field(gt=0, default=None)
+    locale: str | None = Field(max_length=2, default=None)
+
+
 if TYPE_CHECKING:
 
     class Subscription_Pydantic(BaseModel):
