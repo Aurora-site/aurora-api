@@ -1,11 +1,39 @@
+import secrets
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, Body, HTTPException
+from fastapi import APIRouter, Body, Depends, HTTPException
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from pydantic import BaseModel
 
 from internal.db.models import Customers, Subscriptions
 from internal.db.schemas import Cust, CustIn, CustUpdate, Message, Sub, SubIn
+
+AuthDep = Annotated[HTTPBasicCredentials, Depends(HTTPBasic())]
+
+
+async def check_user_credentials(credentials: AuthDep) -> Customers:
+    c = await Customers.get_or_none(id=credentials.username)
+    if c is None:
+        raise HTTPException(
+            status_code=401,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    if not secrets.compare_digest(
+        credentials.password,
+        c.token,
+    ):
+        raise HTTPException(
+            status_code=401,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    return c
+
+
+UserAuth = Annotated[Customers, Depends(check_user_credentials)]
+
 
 router = APIRouter(
     prefix="/api/v1",
@@ -14,6 +42,7 @@ router = APIRouter(
         409: {"model": Message},
     },
 )
+
 
 NewUserBody = Annotated[
     CustIn,
@@ -40,7 +69,7 @@ NewUserBody = Annotated[
 ]
 
 
-@router.post("/new-user", response_model=Cust)
+@router.post("/new-user", response_model=Cust, tags=["User"])
 async def new_user(cust: NewUserBody):
     """Создание нового пользователя"""
     c = await Customers.create(**cust.model_dump())
@@ -59,11 +88,10 @@ class GetUserResponse(BaseModel):
         404: {"model": Message},
     },
 )
-async def get_user(id: int):
+async def get_user(id: int, c: UserAuth):
     """Получение пользователя и его подписок по id"""
-    c = await Customers.get_or_none(id=id)
-    if c is None:
-        raise HTTPException(status_code=404, detail="Customer not found")
+    if c.id != id:
+        raise HTTPException(status_code=401, detail="Not allowed")
     ss = await Subscriptions.filter(cust_id=c.id).all()
     return GetUserResponse(cust=c, subs=[Sub.model_validate(s) for s in ss])
 
@@ -113,11 +141,10 @@ class CustSubResponse(BaseModel):
         404: {"model": Message},
     },
 )
-async def new_subscription(sub: NewSubBody):
+async def new_subscription(sub: NewSubBody, c: UserAuth):
     """Создание новой подписки для существующего пользователя"""
-    c = await Customers.get_or_none(id=sub.cust_id)
-    if c is None:
-        raise HTTPException(status_code=404, detail="Customer not found")
+    if c.id != sub.cust_id:
+        raise HTTPException(status_code=401, detail="Not allowed")
     s = await Subscriptions.create(**sub.model_dump())
     return CustSubResponse(sub=s, cust=c)
 
@@ -138,11 +165,10 @@ async def get_subscription(id: uuid.UUID):
 
 
 @router.put("/mod-user/{id}", response_model=Cust)
-async def mod_user(id: int, upd_cust: CustUpdate):
+async def mod_user(id: int, upd_cust: CustUpdate, u: UserAuth):
     """Модификация пользователя"""
-    u = await Customers.get_or_none(id=id)
-    if u is None:
-        raise HTTPException(status_code=404, detail="User not found")
+    if u.id != id:
+        raise HTTPException(status_code=401, detail="Not allowed")
     upd_u = await u.update_from_dict(
         {k: v for k, v in upd_cust.model_dump().items() if v is not None}
     )

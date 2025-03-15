@@ -26,7 +26,7 @@ else:
 
 
 class Cust(Customer_Pydantic):
-    pass
+    city_id: int
 
 
 if TYPE_CHECKING:

@@ -1,12 +1,20 @@
 from functools import wraps
 
 import httpx
+import pytest
+from fastapi.testclient import TestClient
 from tortoise import Tortoise
 
 from internal.db.config import ORM_MODELS
 from internal.settings import ADMIN_PASS, ADMIN_TEST_PASS, ADMIN_USER
+from main import app
 
 MEMORY_SQLITE = "sqlite://:memory:"
+
+
+@pytest.fixture
+def client():
+    return TestClient(app)
 
 
 def init_memory_sqlite(models: list[str] | None = None):
