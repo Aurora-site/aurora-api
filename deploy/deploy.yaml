@@ -30,17 +30,14 @@
       register: out
       changed_when: out.rc != 0
 
-    # https://github.com/tortoise/aerich/issues/384
     - name: Run migrations
       ansible.builtin.command:
         cmd: docker compose run --rm aurora-api python migrate.py upgrade
         chdir: "{{ project_dir }}"
       environment:
         IMAGE_TAG: "{{ IMAGE_TAG }}"
-      timeout: 30
       register: out
       changed_when: out.rc != 0
-      ignore_errors: true
 
     - name: Deploy new image
       ansible.builtin.command:

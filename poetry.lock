@@ -2,26 +2,28 @@
 
 [[package]]
 name = "aerich"
-version = "0.8.1"
+version = "0.8.2"
 description = "A database migrations tool for Tortoise ORM."
 optional = false
-python-versions = "<4.0,>=3.8"
+python-versions = ">=3.8"
 files = [
-    {file = "aerich-0.8.1-py3-none-any.whl", hash = "sha256:2743cf85bd9957ea173055dad07ee5a3219067e4f117d5402a44204c27e83c9f"},
-    {file = "aerich-0.8.1.tar.gz", hash = "sha256:1e95b1c04dfc0c634dd43b0123933038c820140e17a4b27885a63b7461eb0632"},
+    {file = "aerich-0.8.2-py3-none-any.whl", hash = "sha256:c1000cebd8525a1310a0cf0ea7d9a03cc2529413f182e90f08a6c6f4f61edcda"},
+    {file = "aerich-0.8.2.tar.gz", hash = "sha256:0ed2b15bb017785d17323329e5448b4b12fcfec08a20932626c12aa59a8378d6"},
 ]
 
 [package.dependencies]
-asyncclick = ">=8.1.7.2,<9.0.0.0"
-dictdiffer = "*"
-pydantic = ">=2.0,<2.7.0 || >2.7.0,<3.0"
+asyncclick = ">=8.1.7,<9.0.0"
+dictdiffer = ">=0.9.0,<1.0.0"
+pydantic = ">=2.0.2,<2.1.0 || >2.1.0,<2.7.0 || >2.7.0,<3.0.0"
 tomli-w = {version = ">=1.1.0,<2.0.0", optional = true, markers = "python_version >= \"3.11\" and extra == \"toml\""}
-tortoise-orm = ">=0.21"
+tortoise-orm = {version = ">=0.21.0,<1.0.0", markers = "python_version < \"4.0\""}
 
 [package.extras]
-asyncmy = ["asyncmy (>=0.2.9,<0.3.0)"]
+asyncmy = ["asyncmy (>=0.2.9)"]
 asyncpg = ["asyncpg"]
-toml = ["tomli-w (>=1.1.0,<2.0.0)", "tomlkit"]
+mysql = ["aiomysql (>=0.2.0)"]
+psycopg = ["psycopg[binary,pool] (>=3.0.12,<4.0.0)"]
+toml = ["tomli-w (>=1.1.0,<2.0.0)", "tomlkit (>=0.11.4,<1.0.0)"]
 
 [[package]]
 name = "aiosqlite"
@@ -254,18 +256,18 @@ idna = ">=2.0.0"
 
 [[package]]
 name = "fastapi"
-version = "0.115.8"
+version = "0.115.11"
 description = "FastAPI framework, high performance, easy to learn, fast to code, ready for production"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "fastapi-0.115.8-py3-none-any.whl", hash = "sha256:753a96dd7e036b34eeef8babdfcfe3f28ff79648f86551eb36bfc1b0bf4a8cbf"},
-    {file = "fastapi-0.115.8.tar.gz", hash = "sha256:0ce9111231720190473e222cdf0f07f7206ad7e53ea02beb1d2dc36e2f0741e9"},
+    {file = "fastapi-0.115.11-py3-none-any.whl", hash = "sha256:32e1541b7b74602e4ef4a0260ecaf3aadf9d4f19590bba3e1bf2ac4666aa2c64"},
+    {file = "fastapi-0.115.11.tar.gz", hash = "sha256:cc81f03f688678b92600a65a5e618b93592c65005db37157147204d8924bf94f"},
 ]
 
 [package.dependencies]
 pydantic = ">=1.7.4,<1.8 || >1.8,<1.8.1 || >1.8.1,<2.0.0 || >2.0.0,<2.0.1 || >2.0.1,<2.1.0 || >2.1.0,<3.0.0"
-starlette = ">=0.40.0,<0.46.0"
+starlette = ">=0.40.0,<0.47.0"
 typing-extensions = ">=4.8.0"
 
 [package.extras]
@@ -556,13 +558,13 @@ files = [
 
 [[package]]
 name = "pytest"
-version = "8.3.4"
+version = "8.3.5"
 description = "pytest: simple powerful testing with Python"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "pytest-8.3.4-py3-none-any.whl", hash = "sha256:50e16d954148559c9a74109af1eaf0c945ba2d8f30f0a3d3335edde19788b6f6"},
-    {file = "pytest-8.3.4.tar.gz", hash = "sha256:965370d062bce11e73868e0335abac31b4d3de0e82f4007408d242b4f8610761"},
+    {file = "pytest-8.3.5-py3-none-any.whl", hash = "sha256:c69214aa47deac29fad6c2a4f590b9c4a9fdb16a403176fe154b79c0b4d4d820"},
+    {file = "pytest-8.3.5.tar.gz", hash = "sha256:f4efe70cc14e511565ac476b57c279e12a855b11f48f212af1080ef2263d3845"},
 ]
 
 [package.dependencies]
@@ -659,13 +661,13 @@ files = [
 
 [[package]]
 name = "starlette"
-version = "0.45.3"
+version = "0.46.1"
 description = "The little ASGI library that shines."
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "starlette-0.45.3-py3-none-any.whl", hash = "sha256:dfb6d332576f136ec740296c7e8bb8c8a7125044e7c6da30744718880cdd059d"},
-    {file = "starlette-0.45.3.tar.gz", hash = "sha256:2cbcba2a75806f8a41c722141486f37c28e30a0921c5f6fe4346cb0dcee1302f"},
+    {file = "starlette-0.46.1-py3-none-any.whl", hash = "sha256:77c74ed9d2720138b25875133f3a2dae6d854af2ec37dceb56aef370c1d8a227"},
+    {file = "starlette-0.46.1.tar.gz", hash = "sha256:3c88d58ee4bd1bb807c0d1acb381838afc7752f9ddaec81bbe4383611d833230"},
 ]
 
 [package.dependencies]
@@ -759,4 +761,4 @@ standard = ["colorama (>=0.4)", "httptools (>=0.6.3)", "python-dotenv (>=0.13)",
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "7aefd61905d0c6b5ce8ac008993f15d3efc1f2817c8cb12d2ba8c6cefa574514"
+content-hash = "c0314cc04d1936f2042c201c0baf26ff8da6a32f5a8333ad4d1a0985869bd983"
