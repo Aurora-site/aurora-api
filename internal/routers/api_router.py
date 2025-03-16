@@ -2,12 +2,13 @@ import json
 
 from fastapi import (
     APIRouter,
+    HTTPException,
     Response,
 )
 from pydantic import BaseModel
 
-from internal.db.models import Cities, Tours
-from internal.db.schemas import City, Tour
+from internal.db.models import Banners, Cities, Tours
+from internal.db.schemas import BannerIn, City, Tour
 from internal.nooa import nooa_req, swpc_req
 from internal.nooa.calc import (
     AuroraNooaProbabilityResponse,
@@ -104,3 +105,12 @@ async def api_all_cities():
 async def api_all_tours():
     """Получение списка всех туров для выбора"""
     return await Tours.all()
+
+
+@router.get("/banner", response_model=BannerIn)
+async def api_banner(id: int = 1):
+    """Получение баннера"""
+    b = await Banners.get_or_none(id=1)
+    if b is None:
+        raise HTTPException(status_code=404, detail="Banner not found")
+    return b

@@ -148,3 +148,18 @@ class Tours(models.Model):
 
     class Meta:
         table = "tours"
+
+
+# Banners
+# id pk (всегда 1)
+# name varchar(255) default “”
+# url varchar(2000)
+
+
+class Banners(models.Model):
+    id = fields.IntField(primary_key=True)
+    name = fields.CharField(max_length=255, default="")
+    url = fields.CharField(max_length=2000)
+
+    class Meta:
+        table = "banners"

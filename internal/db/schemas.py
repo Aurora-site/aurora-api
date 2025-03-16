@@ -5,7 +5,7 @@ from tortoise.contrib.pydantic import (
     pydantic_model_creator,
 )
 
-from internal.db.models import Cities, Customers, Subscriptions, Tours
+from internal.db.models import Banners, Cities, Customers, Subscriptions, Tours
 from internal.validators import GeoFloat
 
 
@@ -165,4 +165,37 @@ else:
 
 
 class TourIn(TourIn_Pydantic):
+    pass
+
+
+if TYPE_CHECKING:
+
+    class Banner_Pydantic(BaseModel):
+        pass
+
+else:
+    Banner_Pydantic = pydantic_model_creator(
+        Banners,
+        name="Banners",
+    )
+
+
+class Banner(Banner_Pydantic):
+    pass
+
+
+if TYPE_CHECKING:
+
+    class BannerIn_Pydantic(BaseModel):
+        pass
+
+else:
+    BannerIn_Pydantic = pydantic_model_creator(
+        Banners,
+        name="BannersIn",
+        exclude_readonly=True,
+    )
+
+
+class BannerIn(BannerIn_Pydantic):
     pass

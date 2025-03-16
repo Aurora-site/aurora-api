@@ -4,8 +4,9 @@ import structlog
 from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile
 
 from internal.auth import check_credentials
-from internal.db.models import Cities, Customers, Tours
+from internal.db.models import Banners, Cities, Customers, Tours
 from internal.db.schemas import (
+    BannerIn,
     City,
     CityIn,
     CityUpdate,
@@ -126,3 +127,15 @@ async def create_object(
         )
     obj.write_bytes(await file.read())
     return f"{req.base_url}{obj.as_posix()}"
+
+
+@router.post("/set-banner", response_model=BannerIn)
+async def set_banner(banner: BannerIn):
+    """Перезапись баннера"""
+    b = await Banners.get_or_none(id=1)
+    if b is None:
+        b = await Banners.create(**banner.model_dump())
+        return b
+    await b.update_from_dict(banner.model_dump())
+    await b.save()
+    return b
