@@ -44,6 +44,7 @@ class Customers(models.Model):
     city = fields.ForeignKeyField(  # type: ignore
         "models.Cities",
         related_name="cities",
+        null=True,
     )  # city_id in db WARN dont use city_id as filed name for fk
     token = fields.CharField(max_length=255)
     hobo = fields.BooleanField(default=False)

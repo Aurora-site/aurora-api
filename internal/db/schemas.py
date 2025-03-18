@@ -26,7 +26,7 @@ else:
 
 
 class Cust(Customer_Pydantic):
-    city_id: int
+    city_id: int | None
 
 
 if TYPE_CHECKING:
@@ -49,7 +49,7 @@ class CustIn(CustomerIn_Pydantic):
     selected_geo_long: float | None = Field(le=180, ge=-180, default=None)
     locale: str = Field(max_length=2, default="ru")
     token: str = Field(max_length=255)
-    city_id: int = Field(gt=0)
+    city_id: int | None = Field(gt=0, default=None)
 
 
 class CustUpdate(BaseModel):
