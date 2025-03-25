@@ -18,7 +18,12 @@ async def api_cloud_map(
     x: Annotated[int, Path(ge=0, le=7)],
     y: Annotated[int, Path(ge=0, le=7)],
 ):
-    """Получение тайлов облачнсти от OpenWeatherMap"""
+    """Получение тайлов облачнсти от OpenWeatherMap
+
+    - **Источник**: openweathermap.org
+    - **Cache TTL**: 30 минут
+    - **Cache Size**: 64 тайла
+    """
     res = client.get(
         f"https://tile.openweathermap.org/map/clouds/"
         f"{z}/{x}/{y}.png?appid={OW_API_KEY}"

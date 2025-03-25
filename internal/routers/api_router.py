@@ -48,7 +48,11 @@ async def api_aurora_probability(
     bz: swpc_req.BzDep,
     kp: swpc_req.KpDep,
 ):
-    """Получение вероятности северного сияния по заданным параметрам"""
+    """Получение вероятности северного сияния по заданным параметрам
+
+    - **Источник**: https://services.swpc.noaa.gov/json/geospace/geospace_dst_1_hour.json
+    - **Cache TTL**: 1 час
+    """
     ad = SwpcApiData(dst=dst, bz=bz, kp=kp)
     res = aurora_probability(
         user_data=ub,
@@ -72,26 +76,42 @@ async def api_aurora_probability(
 async def api_aurora_nooa_probability(
     req: NooaAuroraReq, aurora_res: nooa_req.AuroraDep
 ):
-    """Получение вероятности северного сияния по заданным координатам из nooa"""
+    """Получение вероятности северного сияния по заданным координатам из nooa
+
+    - **Источник**: https://services.swpc.noaa.gov/json/ovation_aurora_latest.json
+    - **Cache TTL**: 1 час
+    """
     res = nooa_req.NooaAuroraRes.model_validate(json.loads(aurora_res))  # type: ignore
     return nearst_aurora_probability(pos=req, prob_map=res)
 
 
 @router.get("/aurora-map", response_model=nooa_req.NooaAuroraRes)
 async def api_aurora_map(aurora_res: nooa_req.AuroraDep):
-    """Получение карты северного сияния"""
+    """Получение карты северного сияния
+
+    - **Источник**: https://services.swpc.noaa.gov/json/ovation_aurora_latest.json
+    - **Cache TTL**: 1 час
+    """
     return Response(content=aurora_res, media_type="application/json")
 
 
 @router.get("/aurora-kp-3", response_model=nooa_req.NooaAuroraKp3Req)
 async def api_aurora_kp_3(aurora_kp_res: nooa_req.Kp3Dep):
-    """Получение планетарного k-индекса за 3 дня"""
+    """Получение планетарного k-индекса за 3 дня
+
+    - **Источник**: https://services.swpc.noaa.gov/text/3-day-forecast.txt
+    - **Cache TTL**: 24 часа
+    """
     return aurora_kp_res
 
 
 @router.get("/aurora-kp-27", response_model=nooa_req.NooaAuroraKp27Req)
 async def api_aurora_kp_map(aurora_kp_res: nooa_req.Kp27Dep):
-    """Получение планетарного k-индекса за 27 дней"""
+    """Получение планетарного k-индекса за 27 дней
+
+    - **Источник**: https://services.swpc.noaa.gov/text/27-day-outlook.txt
+    - **Cache TTL**: 24 часа
+    """
     return aurora_kp_res
 
 
