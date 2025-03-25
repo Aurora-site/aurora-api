@@ -159,8 +159,12 @@ class Tours(models.Model):
 
 class Banners(models.Model):
     id = fields.IntField(primary_key=True)
+    default = fields.BooleanField(null=True)
+    city_id = fields.IntField(null=True)
+    locale = fields.CharField(max_length=2, null=True)
     name = fields.CharField(max_length=255, default="")
     url = fields.CharField(max_length=2000)
+    duration = fields.IntField(default=3, null=True)
 
     class Meta:
         table = "banners"

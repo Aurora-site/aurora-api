@@ -132,10 +132,29 @@ async def create_object(
 @router.post("/set-banner", response_model=BannerIn)
 async def set_banner(banner: BannerIn):
     """Перезапись баннера"""
-    b = await Banners.get_or_none(id=1)
-    if b is None:
-        b = await Banners.create(**banner.model_dump())
+    if banner.default:
+        b = await Banners.get_or_none(default=True)
+        if b is None:
+            b = await Banners.create(**banner.model_dump())
+            return b
+        await b.update_from_dict(banner.model_dump())
+        await b.save()
         return b
-    await b.update_from_dict(banner.model_dump())
-    await b.save()
-    return b
+    elif banner.city_id is not None:
+        b = await Banners.get_or_none(city_id=banner.city_id)
+        if b is None:
+            b = await Banners.create(**banner.model_dump())
+            return b
+        await b.update_from_dict(banner.model_dump())
+        await b.save()
+        return b
+    elif banner.locale is not None:
+        b = await Banners.get_or_none(locale=banner.locale)
+        if b is None:
+            b = await Banners.create(**banner.model_dump())
+            return b
+        await b.update_from_dict(banner.model_dump())
+        await b.save()
+        return b
+
+    raise HTTPException(status_code=400, detail="Unknown banner type")

@@ -5,8 +5,12 @@ async def upgrade(db: BaseDBAsyncClient) -> str:
     return """
         CREATE TABLE IF NOT EXISTS "banners" (
     "id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    "default" INT,
+    "city_id" INT,
+    "locale" VARCHAR(2),
     "name" VARCHAR(255) NOT NULL  DEFAULT '',
-    "url" VARCHAR(2000) NOT NULL
+    "url" VARCHAR(2000) NOT NULL,
+    "duration" INT   DEFAULT 3
 );
 CREATE TABLE IF NOT EXISTS "cities" (
     "id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,

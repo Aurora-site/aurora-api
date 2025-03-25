@@ -198,4 +198,6 @@ else:
 
 
 class BannerIn(BannerIn_Pydantic):
-    pass
+    default: bool = Field(default=False)
+    city_id: int | None = Field(gt=0, default=None)
+    locale: str | None = Field(max_length=2, default=None)
