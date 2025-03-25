@@ -5,7 +5,7 @@ from fastapi import (
     HTTPException,
     Response,
 )
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from internal.db.models import Banners, Cities, Tours
 from internal.db.schemas import BannerIn, City, Tour
@@ -134,3 +134,40 @@ async def api_banner(id: int = 1):
     if b is None:
         raise HTTPException(status_code=404, detail="Banner not found")
     return b
+
+
+class BannerSearch(BaseModel):
+    default: bool = Field(default=False)
+    city_id: int | None = Field(gt=0, default=None)
+    locale: str | None = Field(max_length=2, default=None)
+
+
+@router.post("/personal-banner", response_model=BannerIn)
+async def api_personal_banner(banner: BannerSearch):
+    """Получение персонального баннера"""
+    if banner.default:
+        b = await Banners.get_or_none(default=True)
+        if b is not None:
+            return b
+    if banner.city_id is not None and banner.locale is not None:
+        b = await Banners.get_or_none(
+            city_id=banner.city_id,
+            locale=banner.locale,
+        )
+        if b is not None:
+            return b
+
+    if banner.city_id is not None:
+        b = await Banners.get_or_none(city_id=banner.city_id)
+        if b is not None:
+            return b
+
+    if banner.locale is not None:
+        b = await Banners.get_or_none(locale=banner.locale)
+        if b is not None:
+            return b
+
+    if (b := await Banners.get_or_none(default=True)) is not None:
+        return b
+
+    raise HTTPException(status_code=404, detail="Banner not found")
