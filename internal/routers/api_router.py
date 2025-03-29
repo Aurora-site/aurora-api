@@ -8,7 +8,7 @@ from fastapi import (
 from pydantic import BaseModel, Field
 
 from internal.db.models import Banners, Cities, Tours
-from internal.db.schemas import BannerIn, City, Tour
+from internal.db.schemas import Banner, BannerIn, City, Tour
 from internal.nooa import nooa_req, swpc_req
 from internal.nooa.calc import (
     AuroraNooaProbabilityResponse,
@@ -171,3 +171,15 @@ async def api_personal_banner(banner: BannerSearch):
         return b
 
     raise HTTPException(status_code=404, detail="Banner not found")
+
+
+class FullBanner(Banner):
+    """Баннер с всеми данными"""
+
+    id: int
+
+
+@router.get("/all-banners", response_model=list[FullBanner])
+async def api_all_banners():
+    """Получение списка всех баннеров для выбора"""
+    return await Banners.all()

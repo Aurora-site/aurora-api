@@ -71,3 +71,20 @@ async def test_add_banner_with_locale(
 ):
     b = setup_banner(client, banner_by_locale)
     assert b == banner_by_locale.model_dump()
+
+
+@pytest.mark.asyncio
+@init_memory_sqlite()
+async def test_delete_banner(
+    client: TestClient,
+    banner: BannerIn,
+):
+    _ = setup_banner(client, banner)
+    res = client.delete(
+        "/api/v1/banner/1",
+        auth=admin_auth,
+    )
+    assert res.status_code == 200
+    res = client.get("/api/v1/all-banners")
+    assert res.status_code == 200
+    assert res.json() == []

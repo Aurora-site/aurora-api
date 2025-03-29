@@ -158,3 +158,19 @@ async def set_banner(banner: BannerIn):
         return b
 
     raise HTTPException(status_code=400, detail="Unknown banner type")
+
+
+@router.delete(
+    "/banner/{banner_id}",
+    responses={
+        200: {"model": Message},
+        404: {"model": Message},
+    },
+)
+async def banner(banner_id: int):
+    """Удаление баннера"""
+    t = await Banners.get_or_none(id=banner_id)
+    if t is None:
+        raise HTTPException(status_code=404, detail="Banner not found")
+    await t.delete()
+    return Message(detail="ok")

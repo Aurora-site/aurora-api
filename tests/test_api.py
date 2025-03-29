@@ -190,3 +190,20 @@ async def test_personal_banner_city_id_locale(
     )
     assert res.status_code == 200
     assert res.json() == b
+
+
+@pytest.mark.asyncio
+@init_memory_sqlite()
+async def test_all_banner_default(
+    client: TestClient,
+    banner: BannerIn,
+    city: CityIn,
+):
+    setup_city(client, city)
+    b = setup_banner(client, banner)
+    b["id"] = 1
+    res = client.get(
+        "/api/v1/all-banners",
+    )
+    assert res.status_code == 200
+    assert res.json() == [b]
