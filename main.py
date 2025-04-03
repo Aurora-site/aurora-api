@@ -75,6 +75,11 @@ async def integrity_exception_handler(request, exc):
     return JSONResponse(status_code=409, content={"detail": str(exc.args[0])})
 
 
+@app.exception_handler(tortoise.exceptions.OperationalError)
+async def operational_exception_handler(request, exc):
+    return JSONResponse(status_code=500, content={"detail": str(exc.args[0])})
+
+
 if IGNORE_CORS:
     app.add_middleware(  # type: ignore
         CORSMiddleware,  # type: ignore

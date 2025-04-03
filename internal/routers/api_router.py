@@ -173,13 +173,7 @@ async def api_personal_banner(banner: BannerSearch):
     raise HTTPException(status_code=404, detail="Banner not found")
 
 
-class FullBanner(Banner):
-    """Баннер с всеми данными"""
-
-    id: int
-
-
-@router.get("/all-banners", response_model=list[FullBanner])
+@router.get("/all-banners", response_model=list[Banner])
 async def api_all_banners():
     """Получение списка всех баннеров для выбора"""
     return await Banners.all()
