@@ -149,25 +149,34 @@ async def api_personal_banner(banner: BannerSearch):
         b = await Banners.get_or_none(default=True)
         if b is not None:
             return b
-    if banner.city_id is not None and banner.locale is not None:
+
+    elif banner.locale is not None and banner.city_id is None:
+        b = await Banners.get_or_none(
+            locale=banner.locale, city_id__isnull=True
+        )
+        if b is not None:
+            return b
+
+    elif banner.city_id is not None and banner.locale is not None:
         b = await Banners.get_or_none(
             city_id=banner.city_id,
             locale=banner.locale,
         )
         if b is not None:
             return b
+        raise HTTPException(status_code=404, detail="Banner not found")
 
-    if banner.city_id is not None:
+    elif banner.city_id is not None:
         b = await Banners.get_or_none(city_id=banner.city_id)
         if b is not None:
             return b
 
-    if banner.locale is not None:
+    elif banner.locale is not None:
         b = await Banners.get_or_none(locale=banner.locale)
         if b is not None:
             return b
 
-    if (b := await Banners.get_or_none(default=True)) is not None:
+    elif (b := await Banners.get_or_none(default=True)) is not None:
         return b
 
     raise HTTPException(status_code=404, detail="Banner not found")

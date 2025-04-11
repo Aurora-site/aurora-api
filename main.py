@@ -27,7 +27,7 @@ setup_logging(
     log_level=LOG_LEVEL,
 )
 access_logger = structlog.stdlib.get_logger("api.access")
-# log = structlog.stdlib.get_logger(__name__)
+log = structlog.stdlib.get_logger(__name__)
 
 # Create data folder for db files
 (Path(".") / "data").mkdir(parents=True, exist_ok=True)
@@ -67,17 +67,20 @@ app.include_router(proxy_router.router)
 
 @app.exception_handler(tortoise.exceptions.ValidationError)
 async def validation_exception_handler(request, exc):
+    log.error(str(exc.args[0]))
     return JSONResponse(status_code=422, content={"detail": exc.args[0]})
 
 
 @app.exception_handler(tortoise.exceptions.IntegrityError)
 async def integrity_exception_handler(request, exc):
+    log.error(str(exc.args[0]))
     return JSONResponse(status_code=409, content={"detail": str(exc.args[0])})
 
 
 @app.exception_handler(tortoise.exceptions.OperationalError)
 async def operational_exception_handler(request, exc):
-    return JSONResponse(status_code=500, content={"detail": str(exc.args[0])})
+    log.error(exc, exc_info=True, stack_info=True)
+    return JSONResponse(status_code=500, content={"detail": str(exc)})
 
 
 if IGNORE_CORS:
