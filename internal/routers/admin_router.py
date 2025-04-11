@@ -134,7 +134,7 @@ async def set_banner(banner: BannerIn):
     """Перезапись баннера"""
     banner_data = banner.model_dump()
     if banner.default:
-        b = await Banners.get_or_none(default=True)
+        b = await Banners.get_or_none(default=True, locale=banner.locale)
         if b is None:
             b = await Banners.create(**banner.model_dump())
             return b

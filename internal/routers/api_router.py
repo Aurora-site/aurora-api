@@ -145,39 +145,18 @@ class BannerSearch(BaseModel):
 @router.post("/personal-banner", response_model=BannerIn)
 async def api_personal_banner(banner: BannerSearch):
     """Получение персонального баннера"""
-    if banner.default:
-        b = await Banners.get_or_none(default=True)
-        if b is not None:
-            return b
 
-    elif banner.locale is not None and banner.city_id is None:
+    if banner.city_id is not None and banner.locale is not None:
         b = await Banners.get_or_none(
-            locale=banner.locale, city_id__isnull=True
+            city_id=banner.city_id, locale=banner.locale
         )
-        if b is not None:
+        if b:
             return b
 
-    elif banner.city_id is not None and banner.locale is not None:
-        b = await Banners.get_or_none(
-            city_id=banner.city_id,
-            locale=banner.locale,
-        )
-        if b is not None:
+    if banner.locale is not None:
+        b = await Banners.get_or_none(default=True, locale=banner.locale)
+        if b:
             return b
-        raise HTTPException(status_code=404, detail="Banner not found")
-
-    elif banner.city_id is not None:
-        b = await Banners.get_or_none(city_id=banner.city_id)
-        if b is not None:
-            return b
-
-    elif banner.locale is not None:
-        b = await Banners.get_or_none(locale=banner.locale)
-        if b is not None:
-            return b
-
-    elif (b := await Banners.get_or_none(default=True)) is not None:
-        return b
 
     raise HTTPException(status_code=404, detail="Banner not found")
 

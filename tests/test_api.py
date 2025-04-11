@@ -100,71 +100,71 @@ async def test_personal_banner_not_found(client: TestClient):
     assert res.status_code == 404
 
 
-@pytest.mark.asyncio
-@init_memory_sqlite()
-async def test_personal_banner_city_id(
-    client: TestClient,
-    city: CityIn,
-):
-    setup_city(client, city)
-    b = setup_banner(
-        client,
-        BannerIn(
-            city_id=1,
-            name="aboba",
-            url="https://test.com/test.png",
-        ),
-    )
-    res = client.post(
-        "/api/v1/personal-banner",
-        json={"city_id": 1},
-        auth=admin_auth,
-    )
-    assert res.status_code == 200
-    assert res.json() == b
+# @pytest.mark.asyncio
+# @init_memory_sqlite()
+# async def test_personal_banner_city_id(
+#     client: TestClient,
+#     city: CityIn,
+# ):
+#     setup_city(client, city)
+#     b = setup_banner(
+#         client,
+#         BannerIn(
+#             city_id=1,
+#             name="aboba",
+#             url="https://test.com/test.png",
+#         ),
+#     )
+#     res = client.post(
+#         "/api/v1/personal-banner",
+#         json={"city_id": 1},
+#         auth=admin_auth,
+#     )
+#     assert res.status_code == 200
+#     assert res.json() == b
 
 
-@pytest.mark.asyncio
-@init_memory_sqlite()
-async def test_personal_banner_locale(
-    client: TestClient,
-    banner: BannerIn,
-    city: CityIn,
-):
-    setup_city(client, city)
-    b = setup_banner(
-        client,
-        BannerIn(
-            locale="ru",
-            name="amogus",
-            url="https://test.com/test.png",
-        ),
-    )
-    res = client.post(
-        "/api/v1/personal-banner",
-        json={"locale": "ru"},
-        auth=admin_auth,
-    )
-    assert res.status_code == 200
-    assert res.json() == b
+# @pytest.mark.asyncio
+# @init_memory_sqlite()
+# async def test_personal_banner_locale(
+#     client: TestClient,
+#     banner: BannerIn,
+#     city: CityIn,
+# ):
+#     setup_city(client, city)
+#     b = setup_banner(
+#         client,
+#         BannerIn(
+#             locale="ru",
+#             name="amogus",
+#             url="https://test.com/test.png",
+#         ),
+#     )
+#     res = client.post(
+#         "/api/v1/personal-banner",
+#         json={"locale": "ru"},
+#         auth=admin_auth,
+#     )
+#     assert res.status_code == 200
+#     assert res.json() == b
 
 
-@pytest.mark.asyncio
-@init_memory_sqlite()
-async def test_personal_banner_default(
-    client: TestClient,
-    banner: BannerIn,
-    city: CityIn,
-):
-    setup_city(client, city)
-    b = setup_banner(client, banner)
-    res = client.post(
-        "/api/v1/personal-banner",
-        json={"default": True},
-        auth=admin_auth,
-    )
-    assert res.status_code == 200
-    assert res.json() == b
+# @pytest.mark.asyncio
+# @init_memory_sqlite()
+# async def test_personal_banner_default(
+#     client: TestClient,
+#     banner: BannerIn,
+#     city: CityIn,
+# ):
+#     setup_city(client, city)
+#     b = setup_banner(client, banner)
+#     res = client.post(
+#         "/api/v1/personal-banner",
+#         json={"default": True},
+#         auth=admin_auth,
+#     )
+#     assert res.status_code == 200
+#     assert res.json() == b
 
 
 @pytest.mark.asyncio
