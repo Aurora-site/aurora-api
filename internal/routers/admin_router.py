@@ -132,6 +132,7 @@ async def create_object(
 @router.post("/set-banner", response_model=BannerIn)
 async def set_banner(banner: BannerIn):
     """Перезапись баннера"""
+    banner_data = banner.model_dump()
     if banner.default:
         b = await Banners.get_or_none(default=True)
         if b is None:
@@ -140,24 +141,28 @@ async def set_banner(banner: BannerIn):
         await b.update_from_dict(banner.model_dump())
         await b.save()
         return b
-    elif banner.city_id is not None:
-        b = await Banners.get_or_none(city_id=banner.city_id)
-        if b is None:
-            b = await Banners.create(**banner.model_dump())
-            return b
-        await b.update_from_dict(banner.model_dump())
-        await b.save()
-        return b
-    elif banner.locale is not None:
-        b = await Banners.get_or_none(locale=banner.locale)
-        if b is None:
-            b = await Banners.create(**banner.model_dump())
-            return b
-        await b.update_from_dict(banner.model_dump())
-        await b.save()
-        return b
 
-    raise HTTPException(status_code=400, detail="Unknown banner type")
+    elif banner.city_id is not None and banner.locale is not None:
+        b = await Banners.get_or_none(
+            city_id=banner.city_id, locale=banner.locale, default=False
+        )
+    elif banner.city_id is not None:
+        b = await Banners.get_or_none(
+            city_id=banner.city_id, locale__isnull=True, default=False
+        )
+    elif banner.locale is not None:
+        b = await Banners.get_or_none(
+            locale=banner.locale, city_id__isnull=True, default=False
+        )
+    else:
+        raise HTTPException(status_code=400, detail="Unknown banner type")
+
+    if b is None:
+        return await Banners.create(**banner_data)
+
+    await b.update_from_dict(banner_data)
+    await b.save()
+    return b
 
 
 @router.delete(
