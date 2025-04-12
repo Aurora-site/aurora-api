@@ -1,15 +1,18 @@
 import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import AsyncGenerator
+from typing import Annotated, AsyncGenerator
 
 import structlog
 import tortoise
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.security import HTTPBasicCredentials
 from fastapi.staticfiles import StaticFiles
 
+from internal.auth import check_credentials
 from internal.db.config import register_orm
 from internal.logger import setup_logging, setup_uvicorn_logging
 from internal.routers import admin_router, api_router, proxy_router, user_router
@@ -44,6 +47,8 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 app = FastAPI(
     lifespan=lifespan,
     swagger_ui_parameters={"syntaxHighlight": False},
+    docs_url=None,
+    redoc_url=None,
 )
 setup_uvicorn_logging(app, access_logger)
 
@@ -56,6 +61,14 @@ async def health():
 @app.get("/", include_in_schema=False)
 async def redirect_docs():
     return RedirectResponse(url="/docs")
+
+
+AdminAuth = Annotated[HTTPBasicCredentials, Depends(check_credentials)]
+
+
+@app.get("/docs", tags=["Docs"])
+async def get_documentation(credentials: AdminAuth):
+    return get_swagger_ui_html(openapi_url="/openapi.json", title="docs")
 
 
 app.mount("/media", StaticFiles(directory=MEDIA_FOLDER))
