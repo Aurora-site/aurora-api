@@ -72,6 +72,8 @@ NewUserBody = Annotated[
 @router.post("/new-user", response_model=Cust, tags=["User"])
 async def new_user(cust: NewUserBody):
     """Создание нового пользователя"""
+    if _ := await Customers.get_or_none(token=cust.token):
+        raise HTTPException(status_code=409, detail="User already exists")
     c = await Customers.create(**cust.model_dump())
     return c
 

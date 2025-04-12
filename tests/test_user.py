@@ -44,8 +44,6 @@ async def test_new_user(client: TestClient, user: CustIn, city: CityIn):
     assert r["locale"] == user.locale
     assert r["token"] == user.token
 
-    return res
-
 
 def setup_user(client: TestClient, user: CustIn):
     res = client.post(
@@ -54,6 +52,19 @@ def setup_user(client: TestClient, user: CustIn):
     )
     assert res.status_code == 200
     return res.json()
+
+
+@pytest.mark.asyncio
+@init_memory_sqlite()
+async def test_new_user_exist(client: TestClient, user: CustIn, city: CityIn):
+    setup_city(client, city)
+    setup_user(client, user)
+
+    res = client.post(
+        "/api/v1/new-user",
+        json=user.model_dump(),
+    )
+    assert res.status_code == 409
 
 
 @pytest.mark.asyncio
