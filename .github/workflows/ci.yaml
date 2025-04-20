@@ -133,4 +133,5 @@ jobs:
             ADMIN_USER=${{ vars.ADMIN_USER }}
             ADMIN_PASS=${{ vars.ADMIN_PASS }}
             ADMIN_SALT=${{ vars.ADMIN_SALT }}
+            FCM_CERT=${{ secrets.FCM_CERT }}
             "

@@ -22,3 +22,7 @@ ADMIN_TEST_PASS = "admin"  # only for tests
 
 # OpenWeatherMap API key
 OW_API_KEY = os.environ["OW_API_KEY"]
+SCHEDULER_ENABLED = bool(os.getenv("SCHEDULER_ENABLED", True))
+
+FCM_CERT = os.getenv("FCM_CERT", "")
+FCM_DRY_RUN = bool(os.getenv("FCM_DRY_RUN", True))

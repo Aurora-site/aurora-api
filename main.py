@@ -1,5 +1,5 @@
 import logging
-from contextlib import asynccontextmanager
+from contextlib import AsyncExitStack, asynccontextmanager
 from pathlib import Path
 from typing import Annotated, AsyncGenerator
 
@@ -14,6 +14,8 @@ from fastapi.staticfiles import StaticFiles
 
 from internal.auth import check_credentials
 from internal.db.config import register_orm
+from internal.jobs import job_router
+from internal.jobs.job_router import scheduler_lifespan
 from internal.logger import setup_logging, setup_uvicorn_logging
 from internal.routers import admin_router, api_router, proxy_router, user_router
 from internal.settings import (
@@ -38,14 +40,26 @@ log = structlog.stdlib.get_logger(__name__)
 (Path(".") / MEDIA_FOLDER).mkdir(parents=True, exist_ok=True)
 
 
+def app_lifespan(lifespans: list):
+    @asynccontextmanager
+    async def _lifespan_manager(app: FastAPI):
+        exit_stack = AsyncExitStack()
+        async with exit_stack:
+            for lifespan in lifespans:
+                await exit_stack.enter_async_context(lifespan(app))
+            yield
+
+    return _lifespan_manager
+
+
 @asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+async def db_lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     async with register_orm(app):
         yield
 
 
 app = FastAPI(
-    lifespan=lifespan,
+    lifespan=app_lifespan([db_lifespan, scheduler_lifespan]),
     swagger_ui_parameters={"syntaxHighlight": False},
     docs_url=None,
     redoc_url=None,
@@ -76,6 +90,7 @@ app.include_router(api_router.router)
 app.include_router(user_router.router)
 app.include_router(admin_router.router)
 app.include_router(proxy_router.router)
+app.include_router(job_router.router)
 
 
 @app.exception_handler(tortoise.exceptions.ValidationError)

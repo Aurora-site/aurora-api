@@ -52,5 +52,6 @@
         ADMIN_USER: "{{ ADMIN_USER }}"
         ADMIN_PASS: "{{ ADMIN_PASS }}"
         ADMIN_SALT: "{{ ADMIN_SALT }}"
+        FCM_CERT: "{{ FCM_CERT }}"
       register: out
       changed_when: out.rc != 0

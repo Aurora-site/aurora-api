@@ -89,6 +89,7 @@ else:
 class SubIn(SubscriptionIn_Pydantic):
     cust_id: int = Field(gt=0)
     email: EmailStr | None = Field(max_length=255, default=None)
+    active: bool = Field(default=False)
 
 
 if TYPE_CHECKING:

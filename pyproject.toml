@@ -18,12 +18,18 @@ aerich = { extras = ["toml"], version = "^0.8.2" }
 pydantic = { extras = ["email"], version = "^2.10.5" }
 python-multipart = "^0.0.20"
 python-dotenv = "^1.0.1"
+firebase-admin = "^6.7.0"
+pyfcm = "^2.0.8"
 
 
 [tool.poetry.group.test.dependencies]
 pytest = "^8.3.4"
 pytest-asyncio = "^0.25.2"
 pytest-cov = "^6.0.0"
+
+
+[tool.poetry.group.scheduler.dependencies]
+apscheduler = "^3.11.0"
 
 [build-system]
 requires = ["poetry-core"]

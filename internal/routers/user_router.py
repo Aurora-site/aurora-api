@@ -5,7 +5,9 @@ from typing import Annotated
 from fastapi import APIRouter, Body, Depends, HTTPException
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from pydantic import BaseModel
+from tortoise import transactions
 
+from internal import fcm
 from internal.db.models import Customers, Subscriptions
 from internal.db.schemas import Cust, CustIn, CustUpdate, Message, Sub, SubIn
 
@@ -74,7 +76,12 @@ async def new_user(cust: NewUserBody):
     """Создание нового пользователя"""
     if _ := await Customers.get_or_none(token=cust.token):
         raise HTTPException(status_code=409, detail="User already exists")
-    c = await Customers.create(**cust.model_dump())
+    async with transactions.in_transaction():
+        c = await Customers.create(**cust.model_dump())
+        err = fcm.subscribe_to_user_topic(c)
+        if err is not None:
+            # TODO: mb just save subscription and retry fcm call later
+            raise HTTPException(status_code=503, detail=str(err))
     return c
 
 
@@ -141,13 +148,24 @@ class CustSubResponse(BaseModel):
     response_model=CustSubResponse,
     responses={
         404: {"model": Message},
+        503: {"model": Message},
     },
 )
 async def new_subscription(sub: NewSubBody, c: UserAuth):
     """Создание новой подписки для существующего пользователя"""
     if c.id != sub.cust_id:
         raise HTTPException(status_code=401, detail="Not allowed")
-    s = await Subscriptions.create(**sub.model_dump())
+    async with transactions.in_transaction():
+        s = await Subscriptions.create(**sub.model_dump())
+        if s.active:
+            err = fcm.subscribe_to_topic(
+                c.token,
+                c,
+                s,
+            )
+            if err is not None:
+                # TODO: mb just save subscription and retry fcm call later
+                raise HTTPException(status_code=503, detail=str(err))
     return CustSubResponse(sub=s, cust=c)
 
 
