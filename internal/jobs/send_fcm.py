@@ -1,43 +1,88 @@
 import json
+from datetime import datetime, timezone
 
 import structlog
+from tortoise import Tortoise
 
 from internal import fcm
-from internal.db.models import Cities
+from internal.db.models import Cities, Customers
 from internal.nooa import nooa_req
 from internal.nooa.calc import NooaAuroraReq, nearst_aurora_probability
 from internal.nooa.nooa_req import use_nooa_aurora_client
 
 logger = structlog.stdlib.get_logger(__name__)
 
+ProbDict = dict[int, float]
 
-async def subscription_job():
-    """Send push notifications by topics
-    by city id and probability
-    """
+
+async def common_fcm_job(prob_dict: ProbDict | None = None):
     res = nooa_req.NooaAuroraRes.model_validate(
         json.loads(use_nooa_aurora_client())
     )
     cities = await Cities.all()
-    prob_dict = {}
+    if prob_dict is None:
+        prob_dict = {}
     for city in cities:
         prob_dict[city.id] = nearst_aurora_probability(
             pos=NooaAuroraReq(lat=city.lat, lon=city.long),
             prob_map=res,
         ).probability
 
+    # TODO: run concurrently
+    await subscription_job(prob_dict)
+    await user_job(prob_dict)
+
+
+async def subscription_job(prob_dict: ProbDict):
+    """Send push notifications by topics
+    by city id and probability
+    """
+
     alerted_cities = 0
     for city_id, prob in prob_dict.items():
         # 20 40 60
         if prob < 20:
             continue
-        fcm.send_topic_message(city_id, prob)
+        fcm.send_topic_message(city_id, fcm.get_probability_range(prob))
         alerted_cities += 1
 
     logger.info(f"alerted {alerted_cities} cities")
     return alerted_cities
 
 
-async def user_job():
+async def user_job(prob_dict: ProbDict):
     """Send push notifications once per week"""
-    pass
+    cities_to_send = {k: v for k, v in prob_dict.items() if v >= 50}
+    # select all unhobo user with no subscriptions
+    conn = Tortoise.get_connection("default")
+    # TODO: possible SQL injection rewrite as orm query later
+    users_to_send = await conn.execute_query_dict(
+        f"""
+        select * from customers c
+        left join subscriptions s on s.cust_id = c.id
+            where c.hobo = false
+            and (
+                s.active = false
+                or s.active is null
+            )
+            and c.id in ({','.join([str(i) for i in cities_to_send.keys()])})
+        """
+    )
+
+    # for user in users_to_send:
+    # send push notification to each user
+    fcm.send_message_to_users(users_to_send)
+
+    # and then set hobo to true
+    to_hobo = await Customers.filter(
+        id__in=[user["id"] for user in users_to_send]
+    )
+    if not to_hobo:
+        return 0
+    for c in to_hobo:
+        c.hobo = True
+        c.hobo_at = datetime.now(timezone.utc)
+        logger.info(f"Hobo user {c.id}")
+
+    res = await Customers.bulk_update(to_hobo, ["hobo", "hobo_at"])
+    return res

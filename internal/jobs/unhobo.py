@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 
 import structlog
 
@@ -19,7 +19,6 @@ async def unhobo_job():
         return 0
     for c in hobo_customers:
         c.hobo = False
-        c.hobo_at = datetime.now(timezone.utc)
         logger.info(f"Unhobo customer {c.id}")
 
     res = await Customers.bulk_update(hobo_customers, ["hobo"])

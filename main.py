@@ -26,7 +26,7 @@ from internal.settings import (
     MEDIA_FOLDER,
 )
 
-logging.getLogger("hishel.controller").setLevel(logging.DEBUG)
+logging.getLogger("hishel.controller").setLevel(logging.WARNING)
 setup_logging(
     json_logs=LOG_JSON,
     log_level=LOG_LEVEL,
