@@ -24,5 +24,23 @@ ADMIN_TEST_PASS = "admin"  # only for tests
 OW_API_KEY = os.environ["OW_API_KEY"]
 SCHEDULER_ENABLED = bool(os.getenv("SCHEDULER_ENABLED", True))
 
-FCM_CERT = os.getenv("FCM_CERT", "")
+# https://github.com/DenverCoder1/jct-discord-bot/blob/67af73fa05afda73973d8843c1a66c6bacc5ceaf/config.py#L44
+FCM_PROJECT_ID = os.getenv("FCM_PROJECT_ID", "")
+# fmt: off
+FCM_SETTINGS = {
+    "type": "service_account",
+    "project_id": FCM_PROJECT_ID,
+    "private_key_id": os.getenv("FCM_PRIVATE_KEY_ID", ""),
+    "private_key": os.getenv("FCM_PRIVATE_KEY", "").replace("\\n", "\n"),
+    "client_email": f"firebase-adminsdk-fbsvc@{FCM_PROJECT_ID}"
+        f".iam.gserviceaccount.com",
+    "client_id": os.getenv("FCM_CLIENT_ID", ""),
+    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+    "token_uri": "https://oauth2.googleapis.com/token",
+    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+    "client_x509_cert_url": f"https://www.googleapis.com/robot/v1/metadata/x509/"
+        f"firebase-adminsdk-fbsvc%40{FCM_PROJECT_ID}.iam.gserviceaccount.com",
+    "universe_domain": "googleapis.com",
+}
+# fmt: on
 FCM_DRY_RUN = bool(os.getenv("FCM_DRY_RUN", True))

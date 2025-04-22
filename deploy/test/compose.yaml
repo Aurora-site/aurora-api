@@ -11,7 +11,11 @@ services:
       - ADMIN_USER=${ADMIN_USER:-}
       - ADMIN_PASS=${ADMIN_PASS:-}
       - ADMIN_SALT=${ADMIN_SALT:-}
-      - FCM_CERT=${FCM_CERT:-}
+      - FCM_PROJECT_ID=${FCM_PROJECT_ID:-}
+      - FCM_PRIVATE_KEY_ID=${FCM_PRIVATE_KEY_ID:-}
+      - FCM_PRIVATE_KEY=${FCM_PRIVATE_KEY:-}
+      - FCM_CLIENT_ID=${FCM_CLIENT_ID:-}
+      - FCM_DRY_RUN=${FCM_DRY_RUN:-}
     restart: unless-stopped
     command: uvicorn main:app --host 0.0.0.0 --port 8000
     labels:

@@ -1,4 +1,3 @@
-import json
 from typing import Literal, TypeAlias
 
 import structlog
@@ -10,19 +9,13 @@ from firebase_admin import (  # type: ignore
 )
 
 from internal.db.models import Customers, Subscriptions
-from internal.settings import FCM_CERT, FCM_DRY_RUN
+from internal.settings import (
+    FCM_DRY_RUN,
+    FCM_PROJECT_ID,
+    FCM_SETTINGS,
+)
 
 logger = structlog.stdlib.get_logger(__name__)
-
-
-def get_cert() -> dict:
-    try:
-        s = json.loads(FCM_CERT)
-    except json.JSONDecodeError as e:
-        logger.error("Invalid FCM_CERT")
-        raise e
-
-    return s
 
 
 default_app: App | None = None
@@ -31,11 +24,13 @@ default_app: App | None = None
 # TODO: call later when app is created but not in tests runtime
 def init_app():
     global default_app
+    if FCM_DRY_RUN:
+        return None
     if default_app is not None:
         return default_app
     default_app = initialize_app(
-        options={"projectId": "polar-lights-235b0"},
-        credential=credentials.Certificate(get_cert()),
+        options=dict(projectId=FCM_PROJECT_ID),
+        credential=credentials.Certificate(FCM_SETTINGS),
     )
     return default_app
 

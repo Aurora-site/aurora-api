@@ -133,5 +133,9 @@ jobs:
             ADMIN_USER=${{ vars.ADMIN_USER }}
             ADMIN_PASS=${{ vars.ADMIN_PASS }}
             ADMIN_SALT=${{ vars.ADMIN_SALT }}
-            FCM_CERT=${{ secrets.FCM_CERT }}
+            FCM_PROJECT_ID=${{ vars.FCM_PROJECT_ID }}
+            FCM_PRIVATE_KEY_ID=${{ vars.FCM_PRIVATE_KEY_ID }}
+            FCM_PRIVATE_KEY=${{ secrets.FCM_PRIVATE_KEY }}
+            FCM_CLIENT_ID=${{ vars.FCM_CLIENT_ID }}
+            FCM_DRY_RUN=${{ vars.FCM_DRY_RUN }}
             "
