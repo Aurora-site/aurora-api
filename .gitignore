@@ -1,6 +1,7 @@
 # Project specific
 data/
 media/
+test_user_tokens.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

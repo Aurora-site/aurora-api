@@ -22,9 +22,9 @@ default_app: App | None = None
 
 
 # TODO: call later when app is created but not in tests runtime
-def init_app():
+def init_app(dry_run: bool = FCM_DRY_RUN) -> App:
     global default_app
-    if FCM_DRY_RUN:
+    if dry_run:
         return None
     if default_app is not None:
         return default_app
