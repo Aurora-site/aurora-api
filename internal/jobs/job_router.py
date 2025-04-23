@@ -9,6 +9,7 @@ from fastapi import APIRouter, Depends, FastAPI
 
 from internal.auth import check_credentials
 from internal.db.models import Cities
+from internal.jobs.expire_subscriptions_job import expire_subscriptions_job
 from internal.jobs.send_fcm import (
     ProbDict,
     common_fcm_job,
@@ -41,6 +42,14 @@ def init_jobs(s: AsyncIOScheduler):
         hours=1,
         replace_existing=True,
         id="common_fcm_job",
+    )
+
+    s.add_job(
+        expire_subscriptions_job,
+        trigger="interval",
+        hours=1,
+        replace_existing=True,
+        id="expire_subscriptions_job",
     )
 
 
@@ -94,4 +103,10 @@ async def force_user_job(prob_dict: ProbDict | None = None):
                 prob_map=res,
             ).probability
     num = await user_job(prob_dict)
+    return {"message": "ok", "rows": num}
+
+
+@router.post("/force-expire-subscriptions")
+async def force_expire_subscriptions():
+    num = await expire_subscriptions_job()
     return {"message": "ok", "rows": num}
