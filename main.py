@@ -14,6 +14,7 @@ from fastapi.staticfiles import StaticFiles
 
 from internal.auth import check_credentials
 from internal.db.config import register_orm
+from internal.fcm import fcm_lifespan
 from internal.jobs import job_router
 from internal.jobs.job_router import scheduler_lifespan
 from internal.logger import setup_logging, setup_uvicorn_logging
@@ -59,7 +60,7 @@ async def db_lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
 
 app = FastAPI(
-    lifespan=app_lifespan([db_lifespan, scheduler_lifespan]),
+    lifespan=app_lifespan([db_lifespan, scheduler_lifespan, fcm_lifespan]),
     swagger_ui_parameters={"syntaxHighlight": False},
     docs_url=None,
     redoc_url=None,

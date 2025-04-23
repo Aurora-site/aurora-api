@@ -1,6 +1,8 @@
-from typing import Literal, TypeAlias
+from contextlib import asynccontextmanager
+from typing import AsyncGenerator, Literal, TypeAlias
 
 import structlog
+from fastapi import FastAPI
 from firebase_admin import (  # type: ignore
     App,
     credentials,
@@ -21,7 +23,6 @@ logger = structlog.stdlib.get_logger(__name__)
 default_app: App | None = None
 
 
-# TODO: call later when app is created but not in tests runtime
 def init_app(dry_run: bool = FCM_DRY_RUN) -> App:
     global default_app
     if dry_run:
@@ -33,6 +34,13 @@ def init_app(dry_run: bool = FCM_DRY_RUN) -> App:
         credential=credentials.Certificate(FCM_SETTINGS),
     )
     return default_app
+
+
+@asynccontextmanager
+async def fcm_lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    logger.info(f"Starting FCM with dry run: {FCM_DRY_RUN}")
+    app.state.fcm = init_app(FCM_DRY_RUN)
+    yield
 
 
 def subscribe_to_user_topic(user: Customers) -> Exception | None:
@@ -87,7 +95,6 @@ def get_probability_range(probability: int | float) -> ProbabilityRange:
 
 
 def send_topic_message(city_id: int, probability: ProbabilityRange) -> None:
-    init_app()
     messages = []
     for locale in ["ru", "cn"]:
         topic = f"aurora-api-{city_id}-{locale}-{probability}"
@@ -101,6 +108,9 @@ def send_topic_message(city_id: int, probability: ProbabilityRange) -> None:
                 topic=topic,
             )
         )
+    if FCM_DRY_RUN:
+        logger.info(f"DRY RUN: Sent {len(messages)} messages to 2 locales")
+        return
     response: messaging.BatchResponse = messaging.send_all(
         messages,
         dry_run=FCM_DRY_RUN,
@@ -111,7 +121,6 @@ def send_topic_message(city_id: int, probability: ProbabilityRange) -> None:
 
 
 def send_message_to_users(users: list[dict]):
-    init_app()
     messages = []
     for user in users:
         messages.append(
@@ -123,6 +132,12 @@ def send_message_to_users(users: list[dict]):
                 ),
             )
         )
+    if FCM_DRY_RUN:
+        logger.info(
+            f"DRY RUN: Sent {len(messages)} messages to {len(users)} users"
+        )
+        return
+
     response: messaging.BatchResponse = messaging.send_all(
         messages,
         dry_run=FCM_DRY_RUN,
