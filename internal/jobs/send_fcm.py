@@ -46,7 +46,7 @@ async def subscription_job(prob_dict: ProbDict):
         fcm.send_topic_message(city_id, fcm.get_probability_range(prob))
         alerted_cities += 1
 
-    logger.info(f"alerted {alerted_cities} cities")
+    logger.info(f"alerted {alerted_cities} cities: {prob_dict}")
     return alerted_cities
 
 

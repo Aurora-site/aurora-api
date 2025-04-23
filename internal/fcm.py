@@ -96,7 +96,8 @@ def get_probability_range(probability: int | float) -> ProbabilityRange:
 
 def send_topic_message(city_id: int, probability: ProbabilityRange) -> None:
     messages = []
-    for locale in ["ru", "cn"]:
+    locales = ["ru", "cn"]
+    for locale in locales:
         topic = f"aurora-api-{city_id}-{locale}-{probability}"
         messages.append(
             messaging.Message(
@@ -109,14 +110,17 @@ def send_topic_message(city_id: int, probability: ProbabilityRange) -> None:
             )
         )
     if FCM_DRY_RUN:
-        logger.info(f"DRY RUN: Sent {len(messages)} messages to 2 locales")
+        logger.info(
+            f"DRY RUN: Sent {len(messages)} topics to locales: {locales}"
+        )
         return
     response: messaging.BatchResponse = messaging.send_all(
         messages,
         dry_run=FCM_DRY_RUN,
     )
     logger.info(
-        f"Sent {len(messages)} messages to {len(response.responses)} users"
+        f"Sent {len(messages)} topics to {len(response.responses)} users"
+        f" to locales: {locales}"
     )
 
 
