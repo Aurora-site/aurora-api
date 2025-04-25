@@ -126,15 +126,15 @@ jobs:
             --extra-vars "
             PORT=${{ vars.PORT }}
             IGNORE_CORS=${{ vars.IGNORE_CORS }}
-            OW_API_KEY=${{ vars.OW_API_KEY }}
+            OW_API_KEY=${{ secrets.OW_API_KEY }}
             ALLOWED_ORIGINS=${{ vars.ALLOWED_ORIGINS }}
             IMAGE_TAG=${{ steps.vars.outputs.sha_short }}
             ENV_NAME=${{ github.ref_name }}
             ADMIN_USER=${{ vars.ADMIN_USER }}
-            ADMIN_PASS=${{ vars.ADMIN_PASS }}
-            ADMIN_SALT=${{ vars.ADMIN_SALT }}
+            ADMIN_PASS=${{ secrets.ADMIN_PASS }}
+            ADMIN_SALT=${{ secrets.ADMIN_SALT }}
             FCM_PROJECT_ID=${{ vars.FCM_PROJECT_ID }}
-            FCM_PRIVATE_KEY_ID=${{ vars.FCM_PRIVATE_KEY_ID }}
+            FCM_PRIVATE_KEY_ID=${{ secrets.FCM_PRIVATE_KEY_ID }}
             FCM_PRIVATE_KEY=${{ secrets.FCM_PRIVATE_KEY }}
             FCM_CLIENT_ID=${{ vars.FCM_CLIENT_ID }}
             FCM_DRY_RUN=${{ vars.FCM_DRY_RUN }}
