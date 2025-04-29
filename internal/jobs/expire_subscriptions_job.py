@@ -3,6 +3,7 @@ from datetime import datetime, timedelta, timezone
 import structlog
 
 from internal.db.models import Subscriptions
+from internal.logger import setup_job_contextvars
 
 logger = structlog.stdlib.get_logger(__name__)
 
@@ -24,7 +25,7 @@ async def expire_sub(sub: Subscriptions):
 
 
 async def expire_subscriptions_job():
-    logger.info("Running expire_subscriptions_job")
+    setup_job_contextvars("expire_subscriptions")
     s = await Subscriptions.filter(active=True)
     expired_subs = 0
     if not s:

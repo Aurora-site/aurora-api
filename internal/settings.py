@@ -5,9 +5,15 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-IGNORE_CORS = bool(os.getenv("IGNORE_CORS", False))
+_true_values = (
+    "True",
+    "true",
+    "1",
+)
+
+IGNORE_CORS = os.getenv("IGNORE_CORS", "False") in _true_values
 ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "")
-LOG_JSON = bool(os.getenv("LOG_JSON", not sys.stderr.isatty()))
+LOG_JSON = os.getenv("LOG_JSON", str(not sys.stderr.isatty())) in _true_values
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 DB_URL = os.getenv("DB_URL", "sqlite://data/db.sqlite3")
 MEDIA_FOLDER = os.getenv("MEDIA_FOLDER", "media")
@@ -22,7 +28,7 @@ ADMIN_TEST_PASS = "admin"  # only for tests
 
 # OpenWeatherMap API key
 OW_API_KEY = os.environ["OW_API_KEY"]
-SCHEDULER_ENABLED = bool(os.getenv("SCHEDULER_ENABLED", True))
+SCHEDULER_ENABLED = os.getenv("SCHEDULER_ENABLED", "True") in _true_values
 
 # https://github.com/DenverCoder1/jct-discord-bot/blob/67af73fa05afda73973d8843c1a66c6bacc5ceaf/config.py#L44
 FCM_PROJECT_ID = os.getenv("FCM_PROJECT_ID", "")
@@ -43,4 +49,4 @@ FCM_SETTINGS = {
     "universe_domain": "googleapis.com",
 }
 # fmt: on
-FCM_DRY_RUN = bool(os.getenv("FCM_DRY_RUN", True))
+FCM_DRY_RUN = os.getenv("FCM_DRY_RUN", "True") in _true_values

@@ -1,15 +1,15 @@
-import uuid
 from datetime import datetime, timedelta
 
 import structlog
 
 from internal.db.models import Customers
+from internal.logger import setup_job_contextvars
 
 logger = structlog.stdlib.get_logger(__name__)
 
 
 async def unhobo_job():
-    structlog.contextvars.bind_contextvars(job_id=str(uuid.uuid4()))
+    setup_job_contextvars("unhobo")
     hobo_customers = await Customers.filter(
         hobo_at__lt=datetime.now() - timedelta(days=7),
         hobo=True,
