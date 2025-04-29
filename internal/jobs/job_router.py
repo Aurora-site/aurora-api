@@ -77,12 +77,20 @@ router = APIRouter(
 
 @router.post("/force-hobo")
 async def force_hobo():
+    """Запускает задачу по восстановлению израсходованных бесплатных пушей
+    для пользователей
+    """
     num = await unhobo_job()
     return {"message": "ok", "rows": num}
 
 
 @router.post("/force-send-subscription")
 async def force_subscription(prob_dict: ProbDict | None = None):
+    """Отправляет push уведомления по топикам на всех подписчиков
+    принимает словарь для переопределения вероятности по каждому городу
+    где ключ - id города (city_id)
+    значение - вероятность сияния в данном городе (в процентах)
+    """
     if prob_dict is None:
         prob_dict = {}
     num = await subscription_job(prob_dict)
@@ -91,6 +99,11 @@ async def force_subscription(prob_dict: ProbDict | None = None):
 
 @router.post("/force-user-job")
 async def force_user_job(prob_dict: ProbDict | None = None):
+    """Отправляет push уведомления для бесплатных пользователей (hobo)
+    принимает словарь для переопределения вероятности по каждому городу
+    где ключ - id города (city_id)
+    значение - вероятность сияния в данном городе (в процентах)
+    """
     if prob_dict is None:
         prob_dict = {}
         res = nooa_req.NooaAuroraRes.model_validate(
@@ -108,5 +121,8 @@ async def force_user_job(prob_dict: ProbDict | None = None):
 
 @router.post("/force-expire-subscriptions")
 async def force_expire_subscriptions():
+    """Запускает задачу по удалению подписок которые уже не активны
+    в базе данных
+    """
     num = await expire_subscriptions_job()
     return {"message": "ok", "rows": num}
