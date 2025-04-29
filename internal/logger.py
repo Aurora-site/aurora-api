@@ -2,6 +2,7 @@ import logging
 import sys
 import time
 import uuid
+from datetime import datetime
 
 import structlog
 from fastapi import FastAPI, Request, Response
@@ -139,7 +140,12 @@ def setup_uvicorn_logging(
                     "status_code": response.status_code,
                     "method": request.method,
                 },
-                headers={"X-Process-Time": process_time},
+                headers={
+                    "X-Process-Time": process_time,
+                    "X-Forwarded-For": request.headers.get(
+                        "X-Forwarded-For", ""
+                    ),
+                },
                 network={
                     "client": {
                         "ip": request.client.host,  # type: ignore
@@ -149,6 +155,16 @@ def setup_uvicorn_logging(
             )
             response.headers["X-Process-Time"] = process_time
         return response
+
+
+def setup_job_contextvars(job_name: str):
+    structlog.contextvars.clear_contextvars()
+    structlog.contextvars.bind_contextvars(
+        job_id=str(uuid.uuid4()),
+        job_name=job_name,
+        job_start=datetime.now(),
+    )
+    logger.info(f"Job {job_name} started")
 
 
 logger = logging.getLogger(__name__)

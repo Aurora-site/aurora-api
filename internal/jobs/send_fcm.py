@@ -1,4 +1,3 @@
-import json
 from datetime import datetime, timezone
 
 import structlog
@@ -6,6 +5,7 @@ from tortoise import Tortoise
 
 from internal import fcm
 from internal.db.models import Cities, Customers
+from internal.logger import setup_job_contextvars
 from internal.nooa import nooa_req
 from internal.nooa.calc import NooaAuroraReq, nearst_aurora_probability
 from internal.nooa.nooa_req import use_nooa_aurora_client
@@ -16,9 +16,8 @@ ProbDict = dict[int, float]
 
 
 async def common_fcm_job(prob_dict: ProbDict | None = None):
-    res = nooa_req.NooaAuroraRes.model_validate(
-        json.loads(use_nooa_aurora_client())
-    )
+    setup_job_contextvars("common_fcm")
+    res = nooa_req.NooaAuroraRes.model_validate_json(use_nooa_aurora_client())
     cities = await Cities.all()
     if prob_dict is None:
         prob_dict = {}
@@ -60,18 +59,21 @@ async def user_job(prob_dict: ProbDict):
         f"""
         select * from customers c
         left join subscriptions s on s.cust_id = c.id
+        join cities ci on ci.id = c.city_id
             where c.hobo = false
             and (
                 s.active = false
                 or s.active is null
             )
-            and c.id in ({','.join([str(i) for i in cities_to_send.keys()])})
+            and ci.id in ({','.join([str(i) for i in cities_to_send.keys()])})
         """
     )
 
     # for user in users_to_send:
     # send push notification to each user
-    fcm.send_message_to_users(users_to_send)
+    err = fcm.send_message_to_users(users_to_send)
+    if err is not None:
+        return err
 
     # and then set hobo to true
     to_hobo = await Customers.filter(

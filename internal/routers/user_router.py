@@ -158,11 +158,7 @@ async def new_subscription(sub: NewSubBody, c: UserAuth):
     async with transactions.in_transaction():
         s = await Subscriptions.create(**sub.model_dump())
         if s.active:
-            err = fcm.subscribe_to_topic(
-                c.token,
-                c,
-                s,
-            )
+            err = fcm.subscribe_to_piad_topic(c, s)
             if err is not None:
                 # TODO: mb just save subscription and retry fcm call later
                 raise HTTPException(status_code=503, detail=str(err))

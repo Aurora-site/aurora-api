@@ -1,14 +1,15 @@
 import json
 from contextlib import asynccontextmanager
 from datetime import UTC
-from typing import AsyncGenerator
+from typing import AsyncGenerator, Literal
 
 import structlog
 from apscheduler.schedulers.asyncio import AsyncIOScheduler  # type: ignore
-from fastapi import APIRouter, Depends, FastAPI
+from fastapi import APIRouter, Depends, FastAPI, HTTPException
 
+from internal import fcm
 from internal.auth import check_credentials
-from internal.db.models import Cities
+from internal.db.models import Cities, Customers, Subscriptions
 from internal.jobs.expire_subscriptions_job import expire_subscriptions_job
 from internal.jobs.send_fcm import (
     ProbDict,
@@ -126,3 +127,76 @@ async def force_expire_subscriptions():
     """
     num = await expire_subscriptions_job()
     return {"message": "ok", "rows": num}
+
+
+def err_msg(msg, err):
+    return {"message": msg, "details": err}
+
+
+@router.post("/ensure-fcm-topic")
+async def ensure_fcm_topic(
+    user_id: int,
+    topic: str | None = None,
+    action: Literal["subscribe", "unsubscribe"] = "subscribe",
+):
+    """Подписывает/отписывает пользователя на свой топик в зависимости от его
+    подписки"""
+    msg: dict[str, str | dict[str, str]] = {}
+    user = await Customers.get_or_none(id=user_id)
+    if user is None:
+        return {"message": "user not found"}
+    if topic:
+        if action == "subscribe":
+            err = fcm.subscribe_to_topic(user.token, topic)
+            if err is not None:
+                msg |= err_msg("failed to subscribe", err)
+                return msg
+            return {"message": "ok"}
+        elif action == "unsubscribe":
+            err = fcm.unsubscribe_from_topic(user.token, topic)
+            if err is not None:
+                msg |= err_msg("failed to unsubscribe", err)
+                return msg
+            return {"message": "ok"}
+        else:
+            return {"message": "invalid action"}
+    have_paid_sub = await Subscriptions.filter(
+        cust_id=user.id,
+        active=True,
+    ).exists()
+    # if user have no subscriptions - unsubscribe from paid topic
+    if not user.hobo and not have_paid_sub:
+        free_topic = fcm.get_free_topic(user.city_id, user.locale)  # type: ignore
+        err = fcm.subscribe_to_topic(user.token, free_topic)
+        if err is not None:
+            msg |= err_msg("failed to subscribe", err)
+            return msg
+        msg |= {
+            "message": "ok",
+            "free": {"state": "subscribed", "topic": free_topic},
+        }
+        return msg
+
+    # if user have subscriptions - subscribe to paid topic
+    if have_paid_sub:
+        paid_topic = fcm.get_piad_topic(user.city_id, user.locale)  # type: ignore
+        err = fcm.subscribe_to_topic(user.token, paid_topic)
+        if err is not None:
+            msg |= err_msg("failed to subscribe", err)
+            return msg
+        msg |= {
+            "message": "ok",
+            "paid": {"state": "subscribed", "topic": paid_topic},
+        }
+        if not user.hobo:
+            free_topic = fcm.get_free_topic(user.city_id, user.locale)  # type: ignore
+            err = fcm.unsubscribe_from_topic(user.token, free_topic)
+            if err is not None:
+                msg |= err_msg("failed to unsubscribe", err)
+                return msg
+            msg |= {
+                "message": "ok",
+                "free": {"state": "unsubscribed", "topic": free_topic},
+            }
+        return msg
+    raise HTTPException(status_code=500, detail="Internal error")
