@@ -4,9 +4,9 @@ import pytest
 from fastapi.testclient import TestClient
 
 from internal.db.models import Cities, Customers
-from internal.db.schemas import CustIn
-from tests.fixtures import test_city, test_customer
-from tests.test_utils import admin_auth, client, init_memory_sqlite
+from internal.db.schemas import CityIn, CustIn
+from tests.fixtures import admin_auth, city, client, user
+from tests.test_utils import init_memory_sqlite
 
 
 @pytest.mark.asyncio
@@ -18,8 +18,8 @@ async def test_unhobo_empty(client: TestClient):
 
 
 @pytest.fixture
-async def hobo_customers(test_customer: CustIn):
-    new_c = test_customer.model_dump()
+async def hobo_customers(user: CustIn):
+    new_c = user.model_dump()
     new_c_8 = new_c | dict(
         hobo=True,
         hobo_at=datetime.now() - timedelta(days=8),
@@ -33,8 +33,8 @@ async def hobo_customers(test_customer: CustIn):
 
 @pytest.mark.asyncio
 @init_memory_sqlite()
-async def test_unhobo(client: TestClient, test_city, hobo_customers):
-    _ = await Cities.create(**test_city.model_dump())
+async def test_unhobo(client: TestClient, city: CityIn, hobo_customers):
+    _ = await Cities.create(**city.model_dump())
     for c in hobo_customers:
         await Customers.create(**c)
 
