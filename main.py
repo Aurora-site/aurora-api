@@ -100,15 +100,12 @@ async def validation_exception_handler(request, exc):
     return JSONResponse(status_code=422, content={"detail": exc.args[0]})
 
 
-@app.exception_handler(tortoise.exceptions.IntegrityError)
-async def integrity_exception_handler(request, exc):
-    log.error(str(exc.args[0]))
-    return JSONResponse(status_code=409, content={"detail": str(exc.args[0])})
+db_log = structlog.stdlib.get_logger("db")
 
 
 @app.exception_handler(tortoise.exceptions.OperationalError)
 async def operational_exception_handler(request, exc):
-    log.error(exc, exc_info=True, stack_info=True)
+    db_log.exception(exc)
     return JSONResponse(status_code=500, content={"detail": str(exc)})
 
 
