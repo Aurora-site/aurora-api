@@ -15,17 +15,23 @@ logger = structlog.stdlib.get_logger(__name__)
 ProbDict = dict[int, float]
 
 
-async def common_fcm_job(prob_dict: ProbDict | None = None):
-    setup_job_contextvars("common_fcm")
+async def calc_cites_probabilities() -> ProbDict:
     res = nooa_req.NooaAuroraRes.model_validate_json(use_nooa_aurora_client())
     cities = await Cities.all()
-    if prob_dict is None:
-        prob_dict = {}
+    prob_dict = {}
     for city in cities:
         prob_dict[city.id] = nearst_aurora_probability(
             pos=NooaAuroraReq(lat=city.lat, lon=city.long),
             prob_map=res,
         ).probability
+
+    return prob_dict
+
+
+async def common_fcm_job(prob_dict: ProbDict | None = None):
+    setup_job_contextvars("common_fcm")
+    if prob_dict is None:
+        prob_dict = await calc_cites_probabilities()
 
     # TODO: run concurrently
     await subscription_job(prob_dict)

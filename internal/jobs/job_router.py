@@ -1,6 +1,5 @@
-import json
 from contextlib import asynccontextmanager
-from datetime import UTC
+from datetime import UTC, datetime, timezone
 from typing import AsyncGenerator, Literal
 
 import structlog
@@ -9,17 +8,16 @@ from fastapi import APIRouter, Depends, FastAPI, HTTPException
 
 from internal import fcm
 from internal.auth import check_credentials
-from internal.db.models import Cities, Customers, Subscriptions
+from internal.db.models import Customers, Subscriptions
 from internal.jobs.expire_subscriptions_job import expire_subscriptions_job
 from internal.jobs.send_fcm import (
     ProbDict,
+    calc_cites_probabilities,
     common_fcm_job,
     subscription_job,
     user_job,
 )
 from internal.jobs.unhobo import unhobo_job
-from internal.nooa import nooa_req
-from internal.nooa.calc import NooaAuroraReq, nearst_aurora_probability
 from internal.settings import SCHEDULER_ENABLED
 
 log = structlog.stdlib.get_logger(__name__)
@@ -27,14 +25,15 @@ log = structlog.stdlib.get_logger(__name__)
 
 def init_jobs(s: AsyncIOScheduler):
     s.configure(timezone=UTC)
-
+    dt = datetime.now(timezone.utc).replace(hour=17)
     s.add_job(
         unhobo_job,
         trigger="interval",
-        # TODO: start_date = 17:00,
+        # start_date at 17:00 (UTC)
+        start_date=dt,
         days=1,
         replace_existing=True,
-        id="aboba_job",
+        id="unhobo_job",
     )
 
     s.add_job(
@@ -55,18 +54,21 @@ def init_jobs(s: AsyncIOScheduler):
 
 
 @asynccontextmanager
-async def scheduler_lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+async def scheduler_lifespan(
+    app: FastAPI,
+) -> AsyncGenerator[AsyncIOScheduler, None]:
+    s = AsyncIOScheduler()
     if SCHEDULER_ENABLED:
-        app.state.scheduler = AsyncIOScheduler()
-        init_jobs(app.state.scheduler)
+        app.state.scheduler = s
+        init_jobs(s)
         try:
-            app.state.scheduler.start()
-            yield
+            s.start()
+            yield s
         finally:
-            app.state.scheduler.shutdown()
+            s.shutdown()
     else:
         log.info("Scheduler is disabled")
-        yield
+        yield s
 
 
 router = APIRouter(
@@ -93,7 +95,7 @@ async def force_subscription(prob_dict: ProbDict | None = None):
     значение - вероятность сияния в данном городе (в процентах)
     """
     if prob_dict is None:
-        prob_dict = {}
+        prob_dict = await calc_cites_probabilities()
     num = await subscription_job(prob_dict)
     return {"message": "ok", "rows": num}
 
@@ -106,16 +108,7 @@ async def force_user_job(prob_dict: ProbDict | None = None):
     значение - вероятность сияния в данном городе (в процентах)
     """
     if prob_dict is None:
-        prob_dict = {}
-        res = nooa_req.NooaAuroraRes.model_validate(
-            json.loads(nooa_req.use_nooa_aurora_client())
-        )
-        cities = await Cities.all()
-        for city in cities:
-            prob_dict[city.id] = nearst_aurora_probability(
-                pos=NooaAuroraReq(lat=city.lat, lon=city.long),
-                prob_map=res,
-            ).probability
+        prob_dict = await calc_cites_probabilities()
     num = await user_job(prob_dict)
     return {"message": "ok", "rows": num}
 

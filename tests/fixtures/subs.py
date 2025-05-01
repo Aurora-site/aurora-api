@@ -1,6 +1,7 @@
 import pytest
 
-from internal.db.schemas import SubIn
+from internal.db.models import Cities, Customers, Subscriptions
+from internal.db.schemas import CityIn, CustIn, SubIn
 
 
 @pytest.fixture
@@ -34,3 +35,9 @@ def test_sub_all(request: pytest.FixtureRequest):
         geo_push_type="CURRENT",
         active=True,
     )
+
+
+async def setup_sub(city: CityIn, user: CustIn, test_sub_1d: SubIn):
+    await Cities.create(**city.model_dump())
+    await Customers.create(**user.model_dump())
+    return await Subscriptions.create(**test_sub_1d.model_dump())

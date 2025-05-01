@@ -11,7 +11,12 @@ from tests.fixtures import (
     client,
     user,
 )
-from tests.fixtures.subs import test_sub_1d, test_sub_3d, test_sub_all
+from tests.fixtures.subs import (
+    setup_sub,
+    test_sub_1d,
+    test_sub_3d,
+    test_sub_all,
+)
 from tests.test_utils import init_memory_sqlite
 
 
@@ -25,12 +30,6 @@ def check_expired_subs(client: TestClient, count: int):
 @init_memory_sqlite()
 async def test_expire_subscriptions_job_empty(client: TestClient):
     check_expired_subs(client=client, count=0)
-
-
-async def setup_sub(city: CityIn, user: CustIn, test_sub_1d: SubIn):
-    await Cities.create(**city.model_dump())
-    await Customers.create(**user.model_dump())
-    return await Subscriptions.create(**test_sub_1d.model_dump())
 
 
 @pytest.mark.asyncio
