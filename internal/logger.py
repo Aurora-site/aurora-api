@@ -2,7 +2,7 @@ import logging
 import sys
 import time
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 
 import structlog
 from fastapi import FastAPI, Request, Response
@@ -162,7 +162,7 @@ def setup_job_contextvars(job_name: str):
     structlog.contextvars.bind_contextvars(
         job_id=str(uuid.uuid4()),
         job_name=job_name,
-        job_start=datetime.now(),
+        job_start=datetime.now(timezone.utc).isoformat(),
     )
     logger.info(f"Job {job_name} started")
 
