@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 
 import structlog
+from firebase_admin import messaging  # type: ignore
 from tortoise import Tortoise
 
 from internal import fcm
@@ -42,21 +43,31 @@ async def subscription_job(prob_dict: ProbDict):
     """Send push notifications by topics
     by city id and probability
     """
-
+    structlog.contextvars.bind_contextvars(job_name="subscription_job")
+    messages: list[messaging.Message] = []
     alerted_cities = 0
     for city_id, prob in prob_dict.items():
         # 20 40 60
         if prob < 20:
             continue
-        fcm.send_topic_message(city_id, fcm.get_probability_range(prob))
+        messages.append(
+            fcm.prepare_topic_message(city_id, fcm.get_probability_range(prob)),
+        )
         alerted_cities += 1
-
-    logger.info(f"alerted {alerted_cities} cities: {prob_dict}")
+    err = fcm.send_messages_to_subs(messages)
+    if err is not None:
+        logger.exception(f"Failed to send messages: {err}")
+        return err
+    logger.info(
+        f"alerted {alerted_cities}"
+        f" cities: {({k: v for k, v in prob_dict.items() if v >= 20})}"
+    )
     return alerted_cities
 
 
 async def user_job(prob_dict: ProbDict):
     """Send push notifications once per week"""
+    structlog.contextvars.bind_contextvars(job_name="user_job")
     cities_to_send = {k: v for k, v in prob_dict.items() if v >= 50}
     # select all unhobo user with no subscriptions
     conn = Tortoise.get_connection("default")
@@ -79,6 +90,7 @@ async def user_job(prob_dict: ProbDict):
     # send push notification to each user
     err = fcm.send_message_to_users(users_to_send)
     if err is not None:
+        logger.exception(f"Failed to send messages: {err}")
         return err
 
     # and then set hobo to true

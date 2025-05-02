@@ -153,14 +153,14 @@ def send_messages(messages: list[messaging.Message]) -> FcmException | None:
     return None
 
 
-def send_topic_message(
+def prepare_topic_message(
     city_id: int,
     probability: ProbabilityRange,
-) -> FcmException | None:
-    messages = []
+) -> list[messaging.Message]:
+    messages: list[messaging.Message] = []
     locales = ["ru", "cn"]
     for locale in locales:
-        topic = f"aurora-api-{city_id}-{locale}-{probability}"
+        topic = get_piad_topic(city_id, locale, probability)
         messages.append(
             messaging.Message(
                 notification=messaging.Notification(
@@ -171,10 +171,14 @@ def send_topic_message(
                 topic=topic,
             )
         )
+    return messages
+
+
+def send_messages_to_subs(
+    messages: list[messaging.Message],
+) -> FcmException | None:
     if FCM_DRY_RUN:
-        logger.info(
-            f"DRY RUN: Sent {len(messages)} topics to locales: {locales}"
-        )
+        logger.info(f"DRY RUN: Sent {len(messages)} messages to subs")
         return None
     return send_messages(messages)
 
