@@ -12,6 +12,7 @@ from firebase_admin import (  # type: ignore
 
 from internal.db.models import Customers, Subscriptions
 from internal.settings import (
+    ENV_NAME,
     FCM_DRY_RUN,
     FCM_PROJECT_ID,
     FCM_SETTINGS,
@@ -74,7 +75,7 @@ def unsubscribe_from_topic(token: str, topic: str) -> Exception | None:
 
 
 def get_free_topic(city_id: int, locale: str) -> str:
-    return f"aurora-api-{city_id}-{locale}"
+    return f"{ENV_NAME}-aurora-api-{city_id}-{locale}"
 
 
 def subscribe_to_user_topic(user: Customers) -> Exception | None:
@@ -91,7 +92,7 @@ def get_piad_topic(
     locale: str,
     probability: "ProbabilityRange",
 ) -> str:
-    return f"aurora-api-{city_id}-{locale}-{probability}"
+    return f"{ENV_NAME}-aurora-api-{city_id}-{locale}-{probability}"
 
 
 def subscribe_to_piad_topic(

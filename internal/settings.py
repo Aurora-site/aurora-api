@@ -50,3 +50,4 @@ FCM_SETTINGS = {
 }
 # fmt: on
 FCM_DRY_RUN = os.getenv("FCM_DRY_RUN", "True") in _true_values
+ENV_NAME = os.getenv("ENV_NAME", "dev")
