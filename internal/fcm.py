@@ -159,14 +159,29 @@ def prepare_topic_message(
 ) -> list[messaging.Message]:
     messages: list[messaging.Message] = []
     locales = ["ru", "cn"]
+    localized_texts = {
+        "ru": {
+            "title": "Северное сияние в ближайший час! Пора на охоту!",
+            "body": (
+                "Проверяйте облачность и отправляйтесь за северным сиянем! "
+                "Сейчас самое время!"
+            ),
+        },
+        "cn": {
+            "title": "极光将在一小时内出现！",
+            "body": "确认无云，出发去追极光吧！现在正是最佳时机",
+        },
+    }
     for locale in locales:
         topic = get_piad_topic(city_id, locale, probability)
+        title = localized_texts[locale]["title"]
+        body = localized_texts[locale]["body"]
+
         messages.append(
             messaging.Message(
                 notification=messaging.Notification(
-                    title=f"Hello, world! {locale=} {city_id=} {probability=}",
-                    body="This is a topic test notification",
-                    image="https://test-aurora-api.akorz.duckdns.org/media/aboba.png",
+                    title=title,
+                    body=body,
                 ),
                 topic=topic,
             )
