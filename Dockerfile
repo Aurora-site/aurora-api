@@ -9,7 +9,7 @@ RUN --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
     --mount=type=bind,source=poetry.lock,target=poetry.lock \
     pip install pipx==1.7.1 \
     && pipx install --global poetry==1.8.3 \
-    && poetry install --no-root --no-cache \
+    && poetry install --no-root --no-cache --without=test \
     && rm -rf ~/.cache/pypoetry \
     && rm -rf /opt/pipx
 COPY . .
