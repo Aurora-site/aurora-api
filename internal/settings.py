@@ -1,3 +1,4 @@
+import base64
 import os
 import sys
 
@@ -37,7 +38,7 @@ FCM_SETTINGS = {
     "type": "service_account",
     "project_id": FCM_PROJECT_ID,
     "private_key_id": os.getenv("FCM_PRIVATE_KEY_ID", ""),
-    "private_key": os.getenv("FCM_PRIVATE_KEY", "").replace("\\n", "\n"),
+    "private_key": base64.b64decode(os.getenv("FCM_PRIVATE_KEY", "")).decode(),
     "client_email": f"firebase-adminsdk-fbsvc@{FCM_PROJECT_ID}"
         f".iam.gserviceaccount.com",
     "client_id": os.getenv("FCM_CLIENT_ID", ""),
