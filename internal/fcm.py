@@ -1,5 +1,5 @@
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator, Literal, TypeAlias
+from typing import AsyncGenerator, Generator, Literal, TypeAlias
 
 import structlog
 from fastapi import FastAPI
@@ -141,6 +141,11 @@ def log_fcm_send_result(response: messaging.BatchResponse):
 
 
 def send_messages(messages: list[messaging.Message]) -> FcmException | None:
+    if not messages:
+        return None
+    logger.info(
+        f"Sending  topics {[m.topic for m in messages if m.topic is not None]}"
+    )
     try:
         # send_all is not working (returns 404 error)
         response: messaging.BatchResponse = messaging.send_each(
@@ -154,7 +159,7 @@ def send_messages(messages: list[messaging.Message]) -> FcmException | None:
     return None
 
 
-def get_localized_notification(locale: str) -> messaging.Notification | None:
+def get_localized_notification(locale: str) -> messaging.Notification:
     localized_texts = {
         "ru": {
             "title": "Северное сияние в ближайший час! Пора на охоту!",
@@ -169,6 +174,24 @@ def get_localized_notification(locale: str) -> messaging.Notification | None:
     return messaging.Notification(**localized_texts[locale])
 
 
+def number_generator(
+    n: ProbabilityRange,
+) -> Generator[ProbabilityRange, None, None]:
+    """
+    20 -> [20]
+    40 -> [20, 40]
+    60 -> [20, 40, 60]
+    """
+    # Runtime validation for boundary checks
+    if n not in {20, 40, 60}:
+        raise ValueError("Input must be one of 20, 40, or 60")
+
+    current: ProbabilityRange = 20
+    while current <= n:
+        yield current
+        current += 20  # type: ignore
+
+
 def prepare_topic_message(
     city_id: int,
     probability: ProbabilityRange,
@@ -176,14 +199,17 @@ def prepare_topic_message(
     messages: list[messaging.Message] = []
     locales = ["ru", "cn"]
 
-    for locale in locales:
-        topic = get_piad_topic(city_id, locale, probability)
-        messages.append(
-            messaging.Message(
-                notification=get_localized_notification(locale),
-                topic=topic,
+    for prob in number_generator(probability):
+
+        for locale in locales:
+            topic = get_piad_topic(city_id, locale, prob)
+            messages.append(
+                messaging.Message(
+                    notification=get_localized_notification(locale),
+                    topic=topic,
+                )
             )
-        )
+
     return messages
 
 

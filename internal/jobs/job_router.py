@@ -172,7 +172,12 @@ async def ensure_fcm_topic(
 
     # if user have subscriptions - subscribe to paid topic
     if have_paid_sub:
-        paid_topic = fcm.get_piad_topic(user.city_id, user.locale)  # type: ignore
+        sub = await Subscriptions.get_or_none(cust_id=user.id, active=True)
+        paid_topic = fcm.get_piad_topic(
+            user.city_id,  # type: ignore
+            user.locale,
+            fcm.get_probability_range(sub.alert_probability),  # type: ignore
+        )
         err = fcm.subscribe_to_topic(user.token, paid_topic)
         if err is not None:
             msg |= err_msg("failed to subscribe", err)
@@ -182,7 +187,10 @@ async def ensure_fcm_topic(
             "paid": {"state": "subscribed", "topic": paid_topic},
         }
         if not user.hobo:
-            free_topic = fcm.get_free_topic(user.city_id, user.locale)  # type: ignore
+            free_topic = fcm.get_free_topic(
+                user.city_id,  # type: ignore
+                user.locale,
+            )
             err = fcm.unsubscribe_from_topic(user.token, free_topic)
             if err is not None:
                 msg |= err_msg("failed to unsubscribe", err)

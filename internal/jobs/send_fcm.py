@@ -50,7 +50,7 @@ async def subscription_job(prob_dict: ProbDict):
         # 20 40 60
         if prob < 20:
             continue
-        messages.append(
+        messages.extend(
             fcm.prepare_topic_message(city_id, fcm.get_probability_range(prob)),
         )
         alerted_cities += 1
