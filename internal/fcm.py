@@ -154,18 +154,13 @@ def send_messages(messages: list[messaging.Message]) -> FcmException | None:
     return None
 
 
-def prepare_topic_message(
-    city_id: int,
-    probability: ProbabilityRange,
-) -> list[messaging.Message]:
-    messages: list[messaging.Message] = []
-    locales = ["ru", "cn"]
+def get_localized_notification(locale: str) -> messaging.Notification | None:
     localized_texts = {
         "ru": {
             "title": "Северное сияние в ближайший час! Пора на охоту!",
             "body": (
-                "Проверяйте облачность и отправляйтесь за северным сиянем! "
-                "Сейчас самое время!"
+                "Проверяйте облачность и отправляйтесь за северным сиянем! ",
+                "Сейчас самое время!",
             ),
         },
         "cn": {
@@ -173,17 +168,21 @@ def prepare_topic_message(
             "body": "确认无云，出发去追极光吧！现在正是最佳时机",
         },
     }
+    return messaging.Notification(**localized_texts[locale])
+
+
+def prepare_topic_message(
+    city_id: int,
+    probability: ProbabilityRange,
+) -> list[messaging.Message]:
+    messages: list[messaging.Message] = []
+    locales = ["ru", "cn"]
+
     for locale in locales:
         topic = get_piad_topic(city_id, locale, probability)
-        title = localized_texts[locale]["title"]
-        body = localized_texts[locale]["body"]
-
         messages.append(
             messaging.Message(
-                notification=messaging.Notification(
-                    title=title,
-                    body=body,
-                ),
+                notification=get_localized_notification(locale),
                 topic=topic,
             )
         )
@@ -200,18 +199,14 @@ def send_messages_to_subs(
 
 
 def send_message_to_users(users: list[dict]) -> FcmException | None:
-    messages = []
+    messages: list[messaging.Message] = []
     for user in users:
-        messages.append(
-            messaging.Message(
-                notification=messaging.Notification(
-                    title=f"Hello, world! {user['locale']} {user['city_id']}",
-                    body="This is a topic test notification",
-                    image="https://test-aurora-api.akorz.duckdns.org/media/aboba.png",
-                ),
-                token=user["token"],
-            )
+        locale = user.get("locale", "ru")
+        message = messaging.Message(
+            notification=get_localized_notification(locale),
+            token=user["token"],
         )
+        messages.append(message)
     if FCM_DRY_RUN:
         logger.info(
             f"DRY RUN: Sent {len(messages)} messages "
