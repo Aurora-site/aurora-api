@@ -14,7 +14,7 @@ from internal.jobs.send_fcm import (
     ProbDict,
     calc_cites_probabilities,
     common_fcm_job,
-    subscription_job,
+    subscription_job_per_user,
     user_job,
 )
 from internal.jobs.unhobo import unhobo_job
@@ -25,12 +25,11 @@ log = structlog.stdlib.get_logger(__name__)
 
 def init_jobs(s: AsyncIOScheduler):
     s.configure(timezone=UTC)
-    dt = datetime.now(timezone.utc).replace(hour=17)
     s.add_job(
         unhobo_job,
         trigger="interval",
         # start_date at 17:00 (UTC)
-        start_date=dt,
+        start_date=datetime.now(timezone.utc).replace(hour=17),
         days=1,
         replace_existing=True,
         id="unhobo_job",
@@ -96,8 +95,9 @@ async def force_subscription(prob_dict: ProbDict | None = None):
     """
     if prob_dict is None:
         prob_dict = await calc_cites_probabilities()
-    num = await subscription_job(prob_dict)
-    return {"message": "ok", "rows": num}
+    # NOTE: removed topic implementation
+    res = await subscription_job_per_user(prob_dict)
+    return {"message": "ok", **res}
 
 
 @router.post("/force-user-job")

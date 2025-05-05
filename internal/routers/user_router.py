@@ -157,11 +157,12 @@ async def new_subscription(sub: NewSubBody, c: UserAuth):
         raise HTTPException(status_code=401, detail="Not allowed")
     async with transactions.in_transaction():
         s = await Subscriptions.create(**sub.model_dump())
-        if s.active:
-            err = fcm.subscribe_to_piad_topic(c, s)
-            if err is not None:
-                # TODO: mb just save subscription and retry fcm call later
-                raise HTTPException(status_code=503, detail=str(err))
+        # NOTE: removed topic implementation
+        # if s.active:
+        #     err = fcm.subscribe_to_piad_topic(c, s)
+        #     if err is not None:
+        #         # TODO: mb just save subscription and retry fcm call later
+        #         raise HTTPException(status_code=503, detail=str(err))
     return CustSubResponse(sub=s, cust=c)
 
 

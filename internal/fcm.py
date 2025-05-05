@@ -174,6 +174,13 @@ def get_localized_notification(locale: str) -> messaging.Notification:
     return messaging.Notification(**localized_texts[locale])
 
 
+def create_message(token: str, locale: str) -> messaging.Message:
+    return messaging.Message(
+        notification=get_localized_notification(locale),
+        token=token,
+    )
+
+
 def number_generator(
     n: ProbabilityRange,
 ) -> Generator[ProbabilityRange, None, None]:
@@ -219,6 +226,10 @@ def send_messages_to_subs(
     if FCM_DRY_RUN:
         logger.info(f"DRY RUN: Sent {len(messages)} messages to subs")
         return None
+    if len(messages) > 500:
+        # TODO: if you see this err: slice to batches or use topics
+        # firebase api wont let send more than 500 messages at once anyway
+        raise ValueError("Too many messages to send")
     return send_messages(messages)
 
 
@@ -226,11 +237,7 @@ def send_message_to_users(users: list[dict]) -> FcmException | None:
     messages: list[messaging.Message] = []
     for user in users:
         locale = user.get("locale", "ru")
-        message = messaging.Message(
-            notification=get_localized_notification(locale),
-            token=user["token"],
-        )
-        messages.append(message)
+        messages.append(create_message(user["token"], locale))
     if FCM_DRY_RUN:
         logger.info(
             f"DRY RUN: Sent {len(messages)} messages "

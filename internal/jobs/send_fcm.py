@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime, timezone
 
 import structlog
@@ -34,11 +35,45 @@ async def common_fcm_job(prob_dict: ProbDict | None = None):
     if prob_dict is None:
         prob_dict = await calc_cites_probabilities()
 
-    # TODO: run concurrently
-    await subscription_job(prob_dict)
-    await user_job(prob_dict)
+    async with asyncio.TaskGroup() as tg:
+        tg.create_task(subscription_job_per_user(prob_dict))
+        tg.create_task(user_job(prob_dict))
 
 
+async def subscription_job_per_user(prob_dict: ProbDict):
+    """Send push notifications once per user"""
+    conn = Tortoise.get_connection("default")
+    alerted_users: list[int] = []
+    messages: list[messaging.Message] = []
+    for city_id, prob in prob_dict.items():
+        user_pool = await conn.execute_query_dict(
+            """
+            select * from customers c
+            left join subscriptions s on s.cust_id = c.id
+            join cities ci on ci.id = c.city_id
+                where s.active = true
+                    and c.city_id = ?
+            """,
+            [city_id],
+        )
+        for user in user_pool:
+            if prob < user["alert_probability"]:
+                continue
+            locale = user.get("locale", "ru")
+
+            messages.append(fcm.create_message(user["token"], locale))
+            alerted_users.append(user["id"])
+    err = fcm.send_messages_to_subs(messages)
+    if err is not None:
+        logger.exception(f"Failed to send messages: {err}")
+        return {"error": err}
+    return {
+        "rows": len(alerted_users),
+        "users": alerted_users,
+    }
+
+
+# NOTE: removed topic implementation
 async def subscription_job(prob_dict: ProbDict):
     """Send push notifications by topics
     by city id and probability
@@ -86,7 +121,6 @@ async def user_job(prob_dict: ProbDict):
         """
     )
 
-    # for user in users_to_send:
     # send push notification to each user
     err = fcm.send_message_to_users(users_to_send)
     if err is not None:

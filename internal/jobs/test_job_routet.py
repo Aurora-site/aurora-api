@@ -16,24 +16,49 @@ from tests.fixtures import admin_auth, city, client, setup_user, user
 from tests.test_utils import init_memory_sqlite
 
 
+async def setup_alert_subs(city, user, test_sub_3d):
+    s1 = await setup_sub(city, user, test_sub_3d)
+    sub2 = test_sub_3d.model_copy(
+        update={"cust_id": 2, "alert_probability": 40}
+    )
+    s2 = await setup_sub(city, user, sub2)
+    sub3 = test_sub_3d.model_copy(
+        update={"cust_id": 3, "alert_probability": 60}
+    )
+    s3 = await setup_sub(city, user, sub3)
+    return s1, s2, s3
+
+
 @pytest.mark.parametrize(
     "prob_dict, rows",
     [
-        ({1: 20, 2: 40, 3: 60}, 3),
-        ({"1": 20, "2": 40, "3": 60}, 3),
-        ({"1": "20", "2": "40", "3": "60"}, 3),
+        ({1: 20, 2: 40, 3: 60}, 1),
+        ({"1": 21, "2": 40, "3": 60}, 1),
+        ({"1": "39", "2": "40", "3": "60"}, 1),
     ],
 )
 @pytest.mark.asyncio
 @init_memory_sqlite()
-async def test_prob_dict(client: TestClient, prob_dict, rows):
+async def test_prob_dict(
+    client: TestClient,
+    prob_dict,
+    rows,
+    city: CityIn,
+    user: CustIn,
+    test_sub_3d: SubIn,
+):
+    await setup_alert_subs(city, user, test_sub_3d)
     res = client.post(
         "/api/v1/force-send-subscription",
         auth=admin_auth,
         json=prob_dict,
     )
     assert res.status_code == 200
-    assert res.json() == {"message": "ok", "rows": rows}
+    assert res.json() == {
+        "message": "ok",
+        "rows": rows,
+        "users": list(range(1, rows + 1)),
+    }
 
 
 @pytest.mark.asyncio
@@ -44,14 +69,19 @@ async def test_force_send_subscription(
     user: CustIn,
     test_sub_3d: SubIn,
 ):
-    await setup_sub(city, user, test_sub_3d)
+    await setup_alert_subs(city, user, test_sub_3d)
     res = client.post(
         "/api/v1/force-send-subscription",
         auth=admin_auth,
-        json={user.city_id: test_sub_3d.alert_probability},
+        json={user.city_id: 45},
     )
     assert res.status_code == 200
-    assert res.json() == {"message": "ok", "rows": 1}
+    # only alert on 20 and 40
+    assert res.json() == {
+        "message": "ok",
+        "rows": 2,
+        "users": [1, 2],
+    }
 
 
 @pytest.mark.asyncio
