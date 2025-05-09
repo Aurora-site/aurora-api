@@ -34,11 +34,13 @@ def init_jobs(s: AsyncIOScheduler):
         replace_existing=True,
         id="unhobo_job",
     )
-
+    dt = datetime.now(timezone.utc)
+    start_dt = dt.replace(hour=dt.hour + 1, minute=0, second=0)
     s.add_job(
         common_fcm_job,
         trigger="interval",
         hours=1,
+        start_date=start_dt,
         replace_existing=True,
         id="common_fcm_job",
     )
@@ -46,6 +48,7 @@ def init_jobs(s: AsyncIOScheduler):
     s.add_job(
         expire_subscriptions_job,
         trigger="interval",
+        start_date=start_dt,
         hours=1,
         replace_existing=True,
         id="expire_subscriptions_job",

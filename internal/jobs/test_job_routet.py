@@ -106,10 +106,11 @@ async def test_force_user_job(
 async def test_init_jobs(client: TestClient, freezer: FrozenDateTimeFactory):
     app = cast(FastAPI, client.app)
     dt = datetime(2012, 1, 14, 12, 0, 1, tzinfo=timezone.utc)
-    freezer.move_to(dt)
+    start_dt = dt.replace(hour=dt.hour + 1, minute=0, second=0)
+    freezer.move_to(start_dt)
     async with scheduler_lifespan(app) as s:
         common_fcm_job: Job = s.get_job("common_fcm_job")
-        interval = dt + timedelta(hours=1)
+        interval = start_dt + timedelta(hours=1)
         assert common_fcm_job.next_run_time == interval
         assert len(common_fcm_job._get_run_times(interval)) == 1
 
@@ -118,6 +119,6 @@ async def test_init_jobs(client: TestClient, freezer: FrozenDateTimeFactory):
         assert len(expire_subscriptions_job._get_run_times(interval)) == 1
 
         unhobo_job: Job = s.get_job("unhobo_job")
-        unhobo_interval = dt.replace(hour=17)
+        unhobo_interval = start_dt.replace(hour=17)
         assert unhobo_job.next_run_time == unhobo_interval
         assert len(unhobo_job._get_run_times(unhobo_interval)) == 1
