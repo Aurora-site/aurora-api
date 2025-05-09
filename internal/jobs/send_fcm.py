@@ -60,8 +60,10 @@ async def subscription_job_per_user(prob_dict: ProbDict):
             if prob < user["alert_probability"]:
                 continue
             locale = user.get("locale", "ru")
-
-            messages.append(fcm.create_message(user["token"], locale))
+            city_name = await fcm.get_city_name(user)
+            messages.append(
+                fcm.create_message(user["token"], locale, city_name)
+            )
             alerted_users.append(user["id"])
     err = fcm.send_messages_to_subs(messages)
     if err is not None:
@@ -122,7 +124,7 @@ async def user_job(prob_dict: ProbDict):
     )
 
     # send push notification to each user
-    err = fcm.send_message_to_users(users_to_send)
+    err = await fcm.send_message_to_users(users_to_send)
     if err is not None:
         logger.exception(f"Failed to send messages: {err}")
         return err

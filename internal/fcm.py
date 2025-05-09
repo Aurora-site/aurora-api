@@ -10,7 +10,7 @@ from firebase_admin import (  # type: ignore
     messaging,
 )
 
-from internal.db.models import Customers, Subscriptions
+from internal.db.models import Cities, Customers, Subscriptions
 from internal.settings import (
     ENV_NAME,
     FCM_DRY_RUN,
@@ -159,10 +159,26 @@ def send_messages(messages: list[messaging.Message]) -> FcmException | None:
     return None
 
 
-def get_localized_notification(locale: str) -> messaging.Notification:
+def get_localized_notification(
+    locale: str,
+    city_name: str | None = None,
+) -> messaging.Notification:
+    if city_name is None:
+        localized_texts = {
+            "ru": {
+                "title": "Северное сияние в ближайший час! Пора на охоту!",
+                "body": "Проверяйте облачность и отправляйтесь за северным сиянем!"  # noqa: E501
+                "Сейчас самое время!",
+            },
+            "cn": {
+                "title": "极光将在一小时内出现！",
+                "body": "确认无云，出发去追极光吧！现在正是最佳时机",
+            },
+        }
+        return messaging.Notification(**localized_texts[locale])
     localized_texts = {
         "ru": {
-            "title": "Северное сияние в ближайший час! Пора на охоту!",
+            "title": f"Северное сияние в ближайший час в городе {city_name}!",
             "body": "Проверяйте облачность и отправляйтесь за северным сиянем! "
             "Сейчас самое время!",
         },
@@ -174,9 +190,13 @@ def get_localized_notification(locale: str) -> messaging.Notification:
     return messaging.Notification(**localized_texts[locale])
 
 
-def create_message(token: str, locale: str) -> messaging.Message:
+def create_message(
+    token: str,
+    locale: str,
+    city_name: str | None,
+) -> messaging.Message:
     return messaging.Message(
-        notification=get_localized_notification(locale),
+        notification=get_localized_notification(locale, city_name),
         token=token,
     )
 
@@ -233,11 +253,12 @@ def send_messages_to_subs(
     return send_messages(messages)
 
 
-def send_message_to_users(users: list[dict]) -> FcmException | None:
+async def send_message_to_users(users: list[dict]) -> FcmException | None:
     messages: list[messaging.Message] = []
     for user in users:
         locale = user.get("locale", "ru")
-        messages.append(create_message(user["token"], locale))
+        city_name = await get_city_name(user)
+        messages.append(create_message(user["token"], locale, city_name))
     if FCM_DRY_RUN:
         logger.info(
             f"DRY RUN: Sent {len(messages)} messages "
@@ -245,3 +266,12 @@ def send_message_to_users(users: list[dict]) -> FcmException | None:
         )
         return None
     return send_messages(messages)
+
+
+async def get_city_name(user: dict[str, str]) -> str | None:
+    """Get localized city name from user"""
+    c = await Cities.get_or_none(id=user["city_id"])
+    if c is None:
+        return None
+    lc = user["locale"]
+    return getattr(c, f"name_{lc}", None)

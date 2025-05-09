@@ -1,6 +1,14 @@
 import pytest
+from fastapi.testclient import TestClient
 
-from internal.fcm import get_probability_range, prepare_topic_message
+from internal.db.schemas import CityIn, CustIn
+from internal.fcm import (
+    get_city_name,
+    get_probability_range,
+    prepare_topic_message,
+)
+from tests.fixtures import city, client, setup_city, setup_user, user, user_auth
+from tests.test_utils import init_memory_sqlite
 
 
 @pytest.mark.parametrize(
@@ -35,3 +43,24 @@ def test_prepare_topic_message(probability, expected_probs):
     for _prob in expected_probs:
         assert f"dev-aurora-api-{city_id}-ru-{_prob}" in topics
         assert f"dev-aurora-api-{city_id}-cn-{_prob}" in topics
+
+
+@pytest.mark.asyncio
+@init_memory_sqlite()
+async def test_get_city_name(client: TestClient, user: CustIn, city: CityIn):
+    city.name_ru = "test city"  # type: ignore
+    setup_user(client, user, city)
+    n = await get_city_name(user.model_dump())
+    assert n == city.name_ru  # type: ignore
+
+
+@pytest.mark.asyncio
+@init_memory_sqlite()
+async def test_get_city_name_none(
+    client: TestClient, user: CustIn, city: CityIn
+):
+    setup_user(client, user, city)
+    u = user.model_dump()
+    u["city_id"] = 2
+    n = await get_city_name(u)
+    assert n is None
